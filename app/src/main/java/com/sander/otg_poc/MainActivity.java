@@ -32,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
     private UsbDeviceConnection connection;
     TextView rcvMsg;
     UsbDevice device;
+    String currentMsg = "";
     private SerialInputOutputManager ioManager;
 
     /////////////////
@@ -64,43 +65,64 @@ public class MainActivity extends AppCompatActivity {
             manager.requestPermission(driver.getDevice(),usbPermissionIntent );
             return;
         }
-
+        String s ="";
+        driver.getPorts().forEach(p-> s.concat(p.getPortNumber()+"|") );
+        rcvMsg.setText(s);
         port = driver.getPorts().get(0); // Most devices have just one port (port 0)
         port.open(connection);
         port.setParameters(9600, 8, UsbSerialPort.STOPBITS_1, UsbSerialPort.PARITY_NONE);
 
 
         rcvMsg.setText(driver.getDevice().getManufacturerName());
+        port.setDTR(true); // for arduino, ...
+        port.setRTS(true);
         ioManager = new SerialInputOutputManager(port,new SerialListner());
         ioManager.start();
     }
 
 
     public void sendMsg(View view) throws IOException {
-        if (!port.isOpen())
-            port.open(connection);
-
         EditText text = findViewById(R.id.message);
        String s = text.getText().toString();
-       port.write(s.getBytes(StandardCharsets.UTF_8), 0);
 
+//        while (true)
+//            if (port.getCTS()) {
+                port.write(s.getBytes(StandardCharsets.UTF_8), 1000);
+//                return;
+//            }
     }
 
     private class SerialListner implements SerialInputOutputManager.Listener{
 
         @Override
         public void onNewData(byte[] data) {
-//            rcvMsg.setText(data.toString());
-                if (data!=null)
-                    rcvMsg.setText( new String(data,StandardCharsets.UTF_8) );
-                else
-                    Toast.makeText(MainActivity.this, "data is null", Toast.LENGTH_SHORT);
+//                if (data!=null ) {
+//                    for (byte c : data){
+//                         if (c == '\n' || c == '\0' || currentMsg.length()>=14) {
+//                             synchronized (this) {
+//                                 runOnUiThread(() -> {
+//                                     rcvMsg.setText(currentMsg);
+//                                     currentMsg = "";
+//                                 });
+//                             }
+//                         }else  currentMsg += (char)c;
+//                    }
+//
+//                }
+            String incoming = new String(data, StandardCharsets.US_ASCII);
+            currentMsg += incoming;
+            if(currentMsg.length() > 0 && currentMsg.contains("\n") == true){
+                String thisLine = currentMsg.substring(0, currentMsg.indexOf("\n")).trim();
+                //Handle this line here
+                runOnUiThread( () -> rcvMsg.setText(thisLine) );
 
+                //Trim the processed line from the readBuffer
+                currentMsg = currentMsg.substring(currentMsg.indexOf("\n") + 1);
+            }
         }
 
         @Override
         public void onRunError(Exception e) {
-            rcvMsg.setText("Serial listner error ");
         }
     }
 
