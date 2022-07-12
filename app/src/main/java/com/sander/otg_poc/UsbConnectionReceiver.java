@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.widget.Toast;
 
 import java.lang.ref.WeakReference;
-import java.util.logging.Handler;
 
 public class UsbConnectionReceiver extends BroadcastReceiver {
 
