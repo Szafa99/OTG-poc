@@ -1,6 +1,5 @@
 package com.sander.otg_poc.dto;
 
-import androidx.databinding.BaseObservable;
 import androidx.databinding.Bindable;
 import com.sander.otg_poc.BR;
 
@@ -35,7 +34,7 @@ public class TimerDto extends DecimalInput{
 
     public void setMinutes(int minutes) {
         this.minutes = minutes;
-        notifyPropertyChanged(BR.value1);
+        setValue1(String.valueOf(minutes));
     }
     public int getSeconds() {
         return seconds;
@@ -43,33 +42,41 @@ public class TimerDto extends DecimalInput{
 
     public void setSeconds(int seconds) {
         this.seconds = seconds;
+        setValue2(String.valueOf(seconds));
+    }
+
+    @Override
+    public void setValue1(String value1) {
+        try {
+            this.minutes = Integer.valueOf(value1);
+        }catch (Exception e){
+            minutes=0;
+        }
+        notifyPropertyChanged(BR.value1);
+    }
+
+    @Override
+    public void setValue2(String value2) {
+        try {
+            this.seconds = Integer.valueOf(value2);
+        }catch (Exception e){
+            seconds=0;
+        }
         notifyPropertyChanged(BR.value2);
     }
 
-    @Override
-    public String toString() {
-        return  minutes + delimiter + seconds +unit;
-    }
-
-    @Override
     @Bindable
-    public String getValue1() {
-        return String.valueOf(minutes);
-    }
-
-    @Override
+    public String getValue1(){
+        return String.valueOf(this.minutes);
+    };
     @Bindable
-    public String getValue2() {
-        return String.valueOf(seconds);
+    public String getValue2(){
+        return String.valueOf(this.seconds);
     }
-
-    @Override
     @Bindable
     public String getUnit() {
         return this.unit;
     }
-
-    @Override
     @Bindable
     public String getDelimiter() {
         return delimiter;

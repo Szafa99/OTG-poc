@@ -14,7 +14,6 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 
@@ -22,9 +21,6 @@ import com.sander.otg_poc.service.SerialService;
 import com.sander.otg_poc.service.SerialServiceConnection;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-
-import java.util.List;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -93,7 +89,6 @@ public class MainActivity extends AppCompatActivity {
             startService(usbIntent);
         }
 
-        @RequiresApi(api = Build.VERSION_CODES.N)
         @Override
         public void onReceive(Context context, Intent intent) {
             switch (intent.getAction()){

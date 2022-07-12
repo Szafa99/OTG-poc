@@ -1,5 +1,6 @@
 package com.sander.otg_poc.service;
 
+import android.annotation.SuppressLint;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -32,7 +33,7 @@ import java.util.Observer;
 import java.util.concurrent.Flow;
 
 public class SerialService extends Service {
-    private static final String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION";
+    public static final String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION";
 
     private UsbDeviceConnection connection;
     private UsbDevice device;
@@ -63,13 +64,11 @@ public class SerialService extends Service {
 
     @Override
     public void onCreate() {
-        Toast.makeText(this, "Invoke background service onCreate method.", Toast.LENGTH_LONG).show();
         super.onCreate();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Toast.makeText(this, "Invoke background service onStartCommand method.", Toast.LENGTH_LONG).show();
         try {
             startConnection();
             serviceStarted = true;
@@ -79,7 +78,6 @@ public class SerialService extends Service {
 
     @Override
     public void onDestroy() {
-        Toast.makeText(this, "Invoke background service onDestroy method.", Toast.LENGTH_LONG).show();
         try {
             port.close();
             driver=null;
@@ -105,15 +103,10 @@ public class SerialService extends Service {
         PendingIntent usbPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
 
         if (connection == null) {
-            if (usbPermissionIntent==null)
-                Toast.makeText(this,"UsbPremIntent is null",Toast.LENGTH_SHORT);
-            else
                 manager.requestPermission(device,usbPermissionIntent );
-            return;
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.R)
     public void startConnection() throws IOException{
         if (driver==null || !manager.hasPermission(device)){
             initConnection();
@@ -153,7 +146,7 @@ public class SerialService extends Service {
     }
 
 
-    @RequiresApi(api = Build.VERSION_CODES.R)
+    @SuppressLint("NewApi")
     private class SerialListener  implements SerialInputOutputManager.Listener, Flow.Publisher<String>{
 
         List <Flow.Subscriber> subscribers;
@@ -164,7 +157,9 @@ public class SerialService extends Service {
             currentMsg += incoming;
             if(currentMsg.length() > 0 && currentMsg.contains("\n") == true){
                 String thisLine = currentMsg.substring(0, currentMsg.indexOf("\n")).trim();
-                subscribers.forEach(s->s.onNext(thisLine));
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    subscribers.forEach(s->s.onNext(thisLine));
+                }
             }
         }
 

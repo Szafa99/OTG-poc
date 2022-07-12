@@ -1,23 +1,37 @@
 package com.sander.otg_poc.presenter;
 
-import androidx.databinding.library.baseAdapters.BR;
 import com.sander.otg_poc.databinding.ActivityProductionBinding;
 import com.sander.otg_poc.dto.TemperatureDto;
 import com.sander.otg_poc.dto.TimerDto;
 import com.sander.otg_poc.model.MachineState;
 import com.sander.otg_poc.model.MinuteCountDownTimer;
 import com.sander.otg_poc.model.ProductionProcess;
+import com.sander.otg_poc.service.UsbConnectionReceiver;
+
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 public class ProcessPresenter {
 
-//    private ProductionActivity view;
+    //    private ProductionActivity view;
     private ActivityProductionBinding activityProductionBinding;
     private ProductionProcess productionProcess;
 
-    private EventHandler cycleOnHandler = o -> onCycleOnTick((long)o);
-    private EventHandler cycleOffHandler = o -> onCycleOffTick((long)o);
-    private EventHandler machineTimeHandler = o -> onMachineTimeTick((long)o);
-    private EventHandler currentTempHandler = o -> onTemperatureChanged((double)o);
+    private EventHandler cycleOnHandler = o -> {
+        if (o instanceof Long)
+            onCycleOnTick((long) o);
+    };
+    private EventHandler cycleOffHandler = o -> {
+        if (o instanceof Long)
+            onCycleOffTick((long) o);
+    };
+    private EventHandler machineTimeHandler = o -> {
+        if (o instanceof Long)
+            onMachineTimeTick((long) o);
+    };
+    private EventHandler currentTempHandler = o -> {
+        if (o instanceof Double)
+            onTemperatureChanged((double) o);
+    };
 
 
     public ProcessPresenter(ActivityProductionBinding activityProductionBinding) {
@@ -39,8 +53,9 @@ public class ProcessPresenter {
 
     public void onMachineTimeTick(long millis) {
         TimerDto machineTimeLeft = TimerDto.millisToTimerDto(millis);
-//        view.renderMachineTime(cycleOffLeft);
         activityProductionBinding.setMachineTime(machineTimeLeft);
+        if (MILLISECONDS.toSeconds(millis)==0 && productionProcess!=null)
+            toggleMachine();
     }
 
     public void onTemperatureChanged(Double temp){

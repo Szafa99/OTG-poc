@@ -15,7 +15,7 @@ public class MinuteCountDownTimer extends CountDownTimer {
 
     private boolean running = false;
 
-    private final static long countDownInterval = SECONDS.toMillis(1 );
+    public final static long COUNT_DOWN_INTERVAL = SECONDS.toMillis(1 );
 
     public int getMinutes() {
         return minutes;
@@ -60,11 +60,16 @@ public class MinuteCountDownTimer extends CountDownTimer {
     }
 
     public MinuteCountDownTimer(int minutes, int seconds, EventHandler eventHandler) {
-        super(MINUTES.toMillis(minutes)+ SECONDS.toMillis(seconds), countDownInterval);
+        super(MINUTES.toMillis(minutes)+ SECONDS.toMillis(seconds), COUNT_DOWN_INTERVAL);
         this.minutes=minutes;
         this.seconds=seconds;
         this.onTickHandler = eventHandler;
         this.onTickHandler.emitEvent( MINUTES.toMillis(minutes)+ SECONDS.toMillis(seconds) );
+    }
+
+    public MinuteCountDownTimer(int minutes, int seconds, EventHandler onTickHandler,EventHandler onFinishHandler) {
+        this(minutes,seconds,onTickHandler);
+        this.onFinishHandler = onFinishHandler;
     }
 
 

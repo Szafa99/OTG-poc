@@ -12,6 +12,8 @@ import com.sander.otg_poc.dto.DecimalInput;
 import com.sander.otg_poc.dto.TemperatureDto;
 import com.sander.otg_poc.dto.TimerDto;
 import com.sander.otg_poc.presenter.ProcessPresenter;
+import com.sander.otg_poc.service.SerialServiceConnection;
+import com.sander.otg_poc.service.UsbConnectionReceiver;
 
 public class ProductionActivity extends AppCompatActivity {
 
@@ -19,6 +21,10 @@ public class ProductionActivity extends AppCompatActivity {
     InputValueLayoutBinding inputValueLayoutBinding;
     AlertDialog.Builder builder;
     ProcessPresenter presenter;
+    SerialServiceConnection serialServiceConnection;
+    private UsbConnectionReceiver usbConnectionReceiver;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -28,13 +34,15 @@ public class ProductionActivity extends AppCompatActivity {
         builder= new AlertDialog.Builder(this);
 
         presenter.initProductionActivity();
+        usbConnectionReceiver = new UsbConnectionReceiver();
     }
 
     android.app.AlertDialog.Builder createDecimalInputAlert(DecimalInput decimalInput, View view){
         inputValueLayoutBinding = InputValueLayoutBinding.inflate(getLayoutInflater(),(ViewGroup) view,false);
         View card =  inputValueLayoutBinding.getRoot();
         inputValueLayoutBinding.setDecimalValue(decimalInput);
-
+        inputValueLayoutBinding.setLifecycleOwner(this);
+        inputValueLayoutBinding.getDecimalValue();
         android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this)
                 .setMessage("CHANGE MACHINE TIME")
                 .setNegativeButton("CANCEL", null)
@@ -43,22 +51,23 @@ public class ProductionActivity extends AppCompatActivity {
     }
 
     public void onMachineTimeCardClick(View view) {
-        TimerDto timerDto = new TimerDto(1, 1);
+        TimerDto timerDto = (TimerDto)activityProductionBinding.getMachineTimeSet();
 
-        createDecimalInputAlert(timerDto,view)
-                .setPositiveButton("CHANGE",(e,l)->{
+        android.app.AlertDialog change = createDecimalInputAlert(timerDto, view)
+                .setPositiveButton("CHANGE", (e, l) -> {
                     DecimalInput input = inputValueLayoutBinding.getDecimalValue();
-                    if ( ! (input instanceof TimerDto)) return;
+                    if (!(input instanceof TimerDto)) return;
                     TimerDto machineTime = (TimerDto) input;
                     presenter.updateMachineTimeSet(machineTime);
                 })
-                .create().show();
+                .create();
+
+        change.show();
     }
 
 
     public void onMachineTempCardClick(View view) {
-        TemperatureDto dto = new TemperatureDto(36.6f);
-
+        TemperatureDto dto = (TemperatureDto) activityProductionBinding.getMachineTempAimed();
         createDecimalInputAlert(dto,view)
                 .setPositiveButton("CHANGE",(e,l)->{
                     DecimalInput input = inputValueLayoutBinding.getDecimalValue();
@@ -67,11 +76,10 @@ public class ProductionActivity extends AppCompatActivity {
                     presenter.updateAimedTemperature(temperatureDto);
                 })
                 .create().show();
-
     }
 
     public void onCycleOnCardClick(View view) {
-        TimerDto timerDto = new TimerDto(1, 1);
+        TimerDto timerDto = (TimerDto)activityProductionBinding.getCycleOnSet();
 
         createDecimalInputAlert(timerDto,view)
                 .setPositiveButton("CHANGE",(e,l)->{
@@ -85,7 +93,7 @@ public class ProductionActivity extends AppCompatActivity {
     }
 
     public void onCycleOffCardClick(View view) {
-        TimerDto timerDto = new TimerDto(1, 1);
+        TimerDto timerDto = (TimerDto)activityProductionBinding.getCycleOffSet();
 
         createDecimalInputAlert(timerDto,view)
                 .setPositiveButton("CHANGE",(e,l)->{
@@ -100,5 +108,9 @@ public class ProductionActivity extends AppCompatActivity {
 
     public void onMachineToggleClick(View view) {
         presenter.toggleMachine();
+    }
+
+    public void connectMachine(View view) {
+        usbConnectionReceiver.startSerialService(this);
     }
 }

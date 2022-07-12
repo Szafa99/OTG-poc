@@ -4,6 +4,9 @@ import com.sander.otg_poc.dto.TimerDto;
 import com.sander.otg_poc.presenter.EventHandler;
 import io.reactivex.rxjava3.core.Maybe;
 
+import static java.util.concurrent.TimeUnit.MINUTES;
+import static java.util.concurrent.TimeUnit.SECONDS;
+
 public class ProductionProcess {
 
     private static ProductionProcess INSTANCE=null;
@@ -42,20 +45,24 @@ public class ProductionProcess {
         this.machineTime = machineTime;
         this.aimedTemperature = aimedTemperature;
         this.temperature = temperature;
-        cycleOff.setOnFinishHandler( o->{
-            if(machineTime.getMillisLeft()>0)
-                cycleOn.start();
-        });
-        cycleOn.setOnFinishHandler( o->{
-            if(machineTime.getMillisLeft()>0)
-                cycleOff.start();
-        });
-        machineTime.setOnFinishHandler( o->{
-            cycleOff.cancel();
-            cycleOn.cancel();
-        });
 
+        initOnFinishHandlers();
     }
+
+   void initOnFinishHandlers(){
+       cycleOff.setOnFinishHandler( o->{
+           if(machineTime.getMillisLeft()>0)
+               cycleOn.start();
+       });
+       cycleOn.setOnFinishHandler( o->{
+           if(machineTime.getMillisLeft()>0)
+               cycleOff.start();
+       });
+       machineTime.setOnFinishHandler( o->{
+           cycleOff.cancel();
+           cycleOn.cancel();
+       });
+   }
 
     private ProductionProcess(EventHandler cycleOffTickHandler,
                              EventHandler cycleOnTickHandler,
@@ -68,12 +75,7 @@ public class ProductionProcess {
         );
     }
 
-    public void stopProcess(){
-        cycleOff.cancel();
-        cycleOn.cancel();
-        machineTime.cancel();
-        processRunning=false;
-    }
+
 
     public MinuteCountDownTimer getCycleOff() {
         return cycleOff;
@@ -118,9 +120,8 @@ public class ProductionProcess {
 
     public TimerDto updateMachineTime(int minutes, int seconds) {
         EventHandler onTickHandler = machineTime.getOnTickHandler();
-//        machineTime.setMinutes(minutes);
-//        machineTime.setSeconds(minutes);
-        machineTime = new MinuteCountDownTimer(minutes,seconds,onTickHandler);
+        EventHandler onFinishHandler = machineTime.getOnFinishHandler();
+        machineTime = new MinuteCountDownTimer(minutes,seconds,onTickHandler,onFinishHandler);
         if (processRunning)
             machineTime.start();
 
@@ -129,20 +130,29 @@ public class ProductionProcess {
 
     public TimerDto updateCycleOff(int minutes, int seconds) {
         EventHandler onTickHandler = cycleOff.getOnTickHandler();
-        cycleOff = new MinuteCountDownTimer(minutes,seconds,onTickHandler);
-        if (machineTime.isRunning() && !cycleOn.isRunning())
+        EventHandler onFinishHandler = cycleOff.getOnFinishHandler();
+        cycleOff = new MinuteCountDownTimer(minutes,seconds,onTickHandler,onFinishHandler);
+        if (machineTime.isRunning() && !cycleOn.isRunning() && processRunning)
             cycleOff.start();
         return new TimerDto(minutes,seconds);
     }
 
     public TimerDto updateCycleOn(int minutes, int seconds) {
         EventHandler onTickHandler = cycleOn.getOnTickHandler();
-        cycleOn = new MinuteCountDownTimer(minutes,seconds,onTickHandler);
-        if (machineTime.isRunning() && !cycleOff.isRunning())
+        EventHandler onFinishHandler = cycleOn.getOnFinishHandler();
+
+        cycleOn = new MinuteCountDownTimer(minutes,seconds,onTickHandler,onFinishHandler);
+        if (machineTime.isRunning() && !cycleOff.isRunning() && processRunning)
             cycleOn.start();
         return new TimerDto(minutes,seconds);
     }
 
+    public void stopProcess(){
+        cycleOff.cancel();
+        cycleOn.cancel();
+        machineTime.cancel();
+        processRunning=false;
+    }
 
     public void startProcess() {
         if (processRunning==true) return;

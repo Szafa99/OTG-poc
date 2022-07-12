@@ -27,19 +27,22 @@
             android:padding="10dp">
 
 
-            <com.google.android.material.appbar.AppBarLayout
-                    android:layout_height="wrap_content"
-                    android:layout_width="match_parent"
-                    android:theme="@style/Theme.OTGpoc.AppBarOverlay">
 
                 <androidx.appcompat.widget.Toolbar
                         android:id="@+id/toolbar"
                         android:layout_width="match_parent"
                         android:layout_height="?attr/actionBarSize"
                         android:background="?attr/colorPrimary"
-                        app:popupTheme="@style/Theme.OTGpoc.PopupOverlay"/>
+                        app:popupTheme="@style/Theme.OTGpoc.PopupOverlay">
 
-            </com.google.android.material.appbar.AppBarLayout>
+                    <Button
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="CONNECT TO MACHINE"
+                            android:onClick="connectMachine"
+                    />
+                </androidx.appcompat.widget.Toolbar>
+
 
         <GridLayout
                 android:columnCount="2"
