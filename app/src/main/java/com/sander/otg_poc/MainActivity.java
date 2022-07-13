@@ -54,6 +54,10 @@ public class MainActivity extends AppCompatActivity {
 
         usbConnectionReceiver = new UsbConnectionReceiver();
         serialServiceConnection = usbConnectionReceiver.getSerialServiceConnection();
+        serialServiceConnection.setEventHandler((o)-> {
+            if (o instanceof String)
+               runOnUiThread(()->rcvMsg.setText((String)o) );
+        });
 
         IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
         IntentFilter filter2 = new IntentFilter(ACTION_USB_DEVICE_ATTACHED);
@@ -68,12 +72,6 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void sendMsg(View view) throws IOException {
-        if (serialServiceConnection.getService().eventHandler==null){
-            serialServiceConnection.getService().eventHandler= (o)-> {
-                    if (o instanceof String)
-                        rcvMsg.setText((String)o);
-                };
-        }
         EditText text = findViewById(R.id.message);
         String s = text.getText().toString();
         if (serialServiceConnection.getConnected()) {

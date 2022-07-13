@@ -158,7 +158,7 @@ public class SerialService extends Service {
             return false;
         }
         try {
-            port.write(message.getBytes(StandardCharsets.UTF_8), 1000);
+            port.write(message.getBytes(StandardCharsets.UTF_8), 100);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -172,9 +172,10 @@ public class SerialService extends Service {
      public void onNewData(byte[] data) {
          String incoming = new String(data, StandardCharsets.US_ASCII);
          currentMsg += incoming;
-         if (currentMsg.length() > 0 && currentMsg.contains("\n") == true) {
+         if(currentMsg.length() > 0 && currentMsg.contains("\n") == true){
              String thisLine = currentMsg.substring(0, currentMsg.indexOf("\n")).trim();
              eventHandler.emitEvent(thisLine);
+             currentMsg = currentMsg.substring(currentMsg.indexOf("\n") + 1);
          }
      }
 
