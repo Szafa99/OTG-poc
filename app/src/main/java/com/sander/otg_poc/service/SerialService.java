@@ -22,6 +22,7 @@ import com.sander.otg_poc.presenter.EventHandler;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Flow;
 
@@ -33,13 +34,13 @@ public class SerialService extends Service {
     private UsbManager manager;
     private UsbSerialPort port;
     private UsbSerialDriver driver;
-    private String currentMsg = "";
     private Boolean serviceStarted = false;
     private SerialInputOutputManager ioManager;
     private PendingIntent usbPermissionIntent;
-//    private SerialListener serialListener;
+    SerialListener serialListener = new SerialListener();
 
     private final IBinder binder = new LocalBinder();
+
 
 
     public class LocalBinder extends Binder {
@@ -58,7 +59,6 @@ public class SerialService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-//        serialListener = new SerialListener();
         usbPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
     }
 
@@ -142,7 +142,7 @@ public class SerialService extends Service {
         Toast.makeText(this, " connected",Toast.LENGTH_LONG).show();
         port.setDTR(true); // for arduino, ...
         port.setRTS(true);
-        ioManager = new SerialInputOutputManager(port,new SerialListener());
+        ioManager = new SerialInputOutputManager(port,serialListener);
         ioManager.start();
     }
 
@@ -165,56 +165,7 @@ public class SerialService extends Service {
         return true;
     }
 
- private class SerialListener implements SerialInputOutputManager.Listener {
 
 
-     @Override
-     public void onNewData(byte[] data) {
-         String incoming = new String(data, StandardCharsets.US_ASCII);
-         currentMsg += incoming;
-         if(currentMsg.length() > 0 && currentMsg.contains("\n") == true){
-             String thisLine = currentMsg.substring(0, currentMsg.indexOf("\n")).trim();
-             eventHandler.emitEvent(thisLine);
-             currentMsg = currentMsg.substring(currentMsg.indexOf("\n") + 1);
-         }
-     }
-
-     @Override
-     public void onRunError(Exception e) {
-         Log.e("SerialListener", "Error receiving data");
-     }
- }
-
-
-//
-//    @SuppressLint("NewApi")
-//    private class SerialListener implements SerialInputOutputManager.Listener, Flow.Publisher<String>{
-//
-//        List <Flow.Subscriber> subscribers;
-//
-//        @Override
-//        public void onNewData(byte[] data) {
-//            String incoming = new String(data, StandardCharsets.US_ASCII);
-//            currentMsg += incoming;
-//            if(currentMsg.length() > 0 && currentMsg.contains("\n") == true){
-//                String thisLine = currentMsg.substring(0, currentMsg.indexOf("\n")).trim();
-//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-//                    subscribers.forEach(s->s.onNext(thisLine));
-//                }
-//            }
-//        }
-//
-//        @Override
-//        public void onRunError(Exception e) {
-//            Log.e("SerialListener","Error receiving data");
-//        }
-//
-//        @Override
-//        public void subscribe(Flow.Subscriber subscriber) {
-//            subscribers.add(subscriber);
-//        }
-
-
-//    }
 
 }

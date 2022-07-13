@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
 
         usbConnectionReceiver = new UsbConnectionReceiver();
         serialServiceConnection = usbConnectionReceiver.getSerialServiceConnection();
-        serialServiceConnection.setEventHandler((o)-> {
+        serialServiceConnection.subscribeToSerial((o)-> {
             if (o instanceof String)
                runOnUiThread(()->rcvMsg.setText((String)o) );
         });
@@ -79,32 +79,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.R)
     public void connectUart(View view) {
         usbConnectionReceiver.startSerialService(this);
 
-//        Flow.Publisher<String> serialListener = serialServiceConnection.getService().getSerialListener();
-//        serialListener.subscribe(new Flow.Subscriber<String>() {
-//            @Override
-//            public void onSubscribe(Flow.Subscription subscription) {
-//
-//            }
-//
-//            @Override
-//            public void onNext(String s) {
-//                rcvMsg.setText(s);
-//            }
-//
-//            @Override
-//            public void onError(Throwable throwable) {
-//
-//            }
-//
-//            @Override
-//            public void onComplete() {
-//
-//            }
-//        });
     }
 
     public void switchView(View view) {
