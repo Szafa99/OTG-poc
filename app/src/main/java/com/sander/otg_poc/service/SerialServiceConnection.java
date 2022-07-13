@@ -15,7 +15,7 @@ public class SerialServiceConnection implements ServiceConnection {
         return isConnected;
     }
 
-    private SerialService service = new SerialService();
+    private SerialService service = null;
     private Boolean isConnected = false;
 
     @Override
