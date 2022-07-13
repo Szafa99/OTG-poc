@@ -25,39 +25,43 @@ public class UsbConnectionReceiver extends BroadcastReceiver {
     private SerialServiceConnection serialServiceConnection = new SerialServiceConnection();
 
 
-    public void startSerialService(Context context) {
+    public void startSerialService(Context context){
         usbIntent = new Intent(context, SerialService.class);
-        context.bindService(usbIntent, serialServiceConnection, Context.BIND_AUTO_CREATE);
+        context.bindService(usbIntent,serialServiceConnection,Context.BIND_AUTO_CREATE);
         context.startService(usbIntent);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public void onReceive(Context context, Intent intent) {
-        switch (intent.getAction()) {
+        switch (intent.getAction()){
             case ACTION_USB_DEVICE_ATTACHED:
                 startSerialService(context);
-                break;
-            case ACTION_USB_DEVICE_DETACHED:
-                context.stopService(usbIntent);
-                break;
-            case ACTION_USB_PERMISSION:
-                synchronized (this) {
-                    if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
-                        try {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                                serialServiceConnection.getService().startConnection();
-                            }
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    } else
-                        Toast.makeText(context, "USB permission denied", Toast.LENGTH_LONG).show();
+                try {
+                    startSerialService(context);
+                } catch (Exception e) {
+//                  runOnUiThread(()->Toast.makeText(MainActivity.this,e.getMessage(),Toast.LENGTH_LONG).show());
+                  Toast.makeText(context,e.getMessage(),Toast.LENGTH_LONG).show();
                 }
                 break;
-            default:
+            case ACTION_USB_DEVICE_DETACHED:
+                context.unbindService(serialServiceConnection);
                 break;
+            case ACTION_USB_PERMISSION:
+                synchronized (this){
+                    if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
+                        try {
+                            serialServiceConnection.getService().startConnection();
+                        } catch (IOException e) {
+                            Toast.makeText(context,e.getMessage(),Toast.LENGTH_LONG).show();
+//                            runOnUiThread(()->Toast.makeText(MainActivity.this,e.getMessage(),Toast.LENGTH_LONG).show());
+                        }
+                    }else
+//                        runOnUiThread(()->Toast.makeText(MainActivity.this,"USB prem denied",Toast.LENGTH_LONG).show());
+                        Toast.makeText(context,"USB prem denied",Toast.LENGTH_LONG).show();
+                }break;
+            default:break;
         }
+
     }
 
 }
