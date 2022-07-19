@@ -1,19 +1,15 @@
-package com.sander.otg_poc.service;
+package com.sander.otg_poc.framework.service;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.hardware.usb.UsbManager;
-import android.os.Build;
 import android.widget.Toast;
-import androidx.annotation.RequiresApi;
-import com.sander.otg_poc.MainActivity;
 
 import java.io.IOException;
 
 import static android.hardware.usb.UsbManager.ACTION_USB_DEVICE_ATTACHED;
 import static android.hardware.usb.UsbManager.ACTION_USB_DEVICE_DETACHED;
-import static com.sander.otg_poc.service.SerialService.ACTION_USB_PERMISSION;
 
 public class UsbConnectionReceiver extends BroadcastReceiver {
     private Intent usbIntent;
@@ -46,10 +42,11 @@ public class UsbConnectionReceiver extends BroadcastReceiver {
             case ACTION_USB_DEVICE_DETACHED:
                 context.unbindService(serialServiceConnection);
                 break;
-            case ACTION_USB_PERMISSION:
+            case SerialService.ACTION_USB_PERMISSION:
                 synchronized (this){
                     if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
                         try {
+                            SerialService serialService =(SerialService) context.getSystemService(SerialService.class.getName());
                             serialServiceConnection.getService().startConnection();
                         } catch (IOException e) {
                             Toast.makeText(context,e.getMessage(),Toast.LENGTH_LONG).show();

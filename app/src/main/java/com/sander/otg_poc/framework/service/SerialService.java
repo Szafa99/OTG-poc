@@ -1,6 +1,5 @@
-package com.sander.otg_poc.service;
+package com.sander.otg_poc.framework.service;
 
-import android.annotation.SuppressLint;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
@@ -9,22 +8,18 @@ import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
 import android.os.Binder;
-import android.os.Build;
 import android.os.IBinder;
-import android.util.Log;
 import android.widget.Toast;
 import androidx.annotation.Nullable;
 import com.hoho.android.usbserial.driver.UsbSerialDriver;
 import com.hoho.android.usbserial.driver.UsbSerialPort;
 import com.hoho.android.usbserial.driver.UsbSerialProber;
 import com.hoho.android.usbserial.util.SerialInputOutputManager;
-import com.sander.otg_poc.presenter.EventHandler;
+import com.sander.otg_poc.utils.EventHandler;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Flow;
 
 public class SerialService extends Service {
     public static final String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION";
@@ -89,7 +84,6 @@ public class SerialService extends Service {
     }
     private void initConnection(){
         // Find all available drivers from attached devices.
-        Toast.makeText(this, "Init connection", Toast.LENGTH_SHORT).show();
 
         manager = (UsbManager) getApplicationContext().getSystemService(Context.USB_SERVICE);
         List<UsbSerialDriver> availableDrivers = UsbSerialProber.getDefaultProber().findAllDrivers(manager);
@@ -99,8 +93,10 @@ public class SerialService extends Service {
         }
 
         // Open a connection to the first available driver.
-        driver = availableDrivers.get(0);
-        device = driver.getDevice();
+        if (driver==null || device==null) {
+            driver = availableDrivers.get(0);
+            device = driver.getDevice();
+        }
         connection = manager.openDevice(device);
 
         if (connection == null) {
@@ -146,10 +142,6 @@ public class SerialService extends Service {
         ioManager.start();
     }
 
-//    public SerialListener  getSerialListener() {
-//        return serialListener;
-//    }
-    public EventHandler eventHandler=null;
 
     public boolean sendMessage(String message){
 

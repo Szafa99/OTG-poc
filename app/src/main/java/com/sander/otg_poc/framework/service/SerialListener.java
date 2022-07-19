@@ -1,8 +1,8 @@
-package com.sander.otg_poc.service;
+package com.sander.otg_poc.framework.service;
 
 import android.util.Log;
 import com.hoho.android.usbserial.util.SerialInputOutputManager;
-import com.sander.otg_poc.presenter.EventHandler;
+import com.sander.otg_poc.utils.EventHandler;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;

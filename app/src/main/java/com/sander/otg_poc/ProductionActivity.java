@@ -12,8 +12,8 @@ import com.sander.otg_poc.dto.DecimalInput;
 import com.sander.otg_poc.dto.TemperatureDto;
 import com.sander.otg_poc.dto.TimerDto;
 import com.sander.otg_poc.presenter.ProcessPresenter;
-import com.sander.otg_poc.service.SerialServiceConnection;
-import com.sander.otg_poc.service.UsbConnectionReceiver;
+import com.sander.otg_poc.framework.service.SerialServiceConnection;
+import com.sander.otg_poc.framework.service.UsbConnectionReceiver;
 
 public class ProductionActivity extends AppCompatActivity {
 
@@ -30,11 +30,12 @@ public class ProductionActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         activityProductionBinding = DataBindingUtil.setContentView(this, R.layout.activity_production);
         activityProductionBinding.setLifecycleOwner(this);
-        presenter = new ProcessPresenter(activityProductionBinding);
-        builder= new AlertDialog.Builder(this);
-
-        presenter.initProductionActivity();
         usbConnectionReceiver = new UsbConnectionReceiver();
+
+        presenter = ProcessPresenter.create(activityProductionBinding,usbConnectionReceiver.getSerialServiceConnection());
+
+        builder= new AlertDialog.Builder(this);
+        presenter.initProductionActivity();
     }
 
     android.app.AlertDialog.Builder createDecimalInputAlert(DecimalInput decimalInput, View view){
@@ -107,7 +108,9 @@ public class ProductionActivity extends AppCompatActivity {
     }
 
     public void onMachineToggleClick(View view) {
-        presenter.toggleMachine();
+//        presenter.toggleMachine();
+       String m = (String)activityProductionBinding.getMessage();
+        presenter.sendMessage(m);
     }
 
     public void connectMachine(View view) {

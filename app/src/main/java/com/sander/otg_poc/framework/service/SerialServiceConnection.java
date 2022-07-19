@@ -1,10 +1,10 @@
-package com.sander.otg_poc.service;
+package com.sander.otg_poc.framework.service;
 
-import android.app.Service;
 import android.content.ComponentName;
 import android.content.ServiceConnection;
 import android.os.IBinder;
-import com.sander.otg_poc.presenter.EventHandler;
+import com.sander.otg_poc.framework.controller.SerialDispatcher;
+import com.sander.otg_poc.utils.EventHandler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +45,7 @@ public class SerialServiceConnection implements ServiceConnection {
         for (EventHandler handler : pendingEventHandlers)
             service.serialListener.subscribe(handler);
         pendingEventHandlers.clear();
-
+        service.serialListener.subscribe(new SerialDispatcher(service.getApplicationContext()));
         isConnected = true;
     }
 

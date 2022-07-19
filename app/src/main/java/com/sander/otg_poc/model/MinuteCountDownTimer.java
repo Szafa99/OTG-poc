@@ -1,7 +1,7 @@
 package com.sander.otg_poc.model;
 
 import android.os.CountDownTimer;
-import com.sander.otg_poc.presenter.EventHandler;
+import com.sander.otg_poc.utils.EventHandler;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;

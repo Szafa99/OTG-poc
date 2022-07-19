@@ -1,4 +1,4 @@
-package com.sander.otg_poc.presenter;
+package com.sander.otg_poc.utils;
 
 public interface EventHandler {
 

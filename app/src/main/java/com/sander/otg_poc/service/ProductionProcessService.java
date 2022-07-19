@@ -1,27 +1,24 @@
-package com.sander.otg_poc.model;
+package com.sander.otg_poc.service;
 
 import com.sander.otg_poc.dto.TimerDto;
-import com.sander.otg_poc.presenter.EventHandler;
-import io.reactivex.rxjava3.core.Maybe;
+import com.sander.otg_poc.model.MinuteCountDownTimer;
+import com.sander.otg_poc.utils.EventHandler;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
-import static java.util.concurrent.TimeUnit.SECONDS;
+public class ProductionProcessService {
 
-public class ProductionProcess {
-
-    private static ProductionProcess INSTANCE=null;
+    private static ProductionProcessService INSTANCE=null;
     private EventHandler currentTempHandler;
-    public static ProductionProcess create(EventHandler cycleOffTickHandler,
-                                    EventHandler cycleOnTickHandler,
-                                    EventHandler machineTimeTickHandler,
-                                    EventHandler currentTempHandler){
-        INSTANCE = new ProductionProcess(cycleOffTickHandler,cycleOnTickHandler,machineTimeTickHandler);
+    public static ProductionProcessService create(EventHandler cycleOffTickHandler,
+                                                  EventHandler cycleOnTickHandler,
+                                                  EventHandler machineTimeTickHandler,
+                                                  EventHandler currentTempHandler){
+        INSTANCE = new ProductionProcessService(cycleOffTickHandler,cycleOnTickHandler,machineTimeTickHandler);
         INSTANCE.currentTempHandler = currentTempHandler;
         return INSTANCE;
     }
 
-    public static ProductionProcess getInstance(){
-        return INSTANCE==null ? new ProductionProcess(null,null,null) : INSTANCE ;
+    public static ProductionProcessService getInstance(){
+        return INSTANCE==null ? new ProductionProcessService(null,null,null) : INSTANCE ;
     }
 
     private MinuteCountDownTimer cycleOff;
@@ -36,10 +33,10 @@ public class ProductionProcess {
 
     private boolean processRunning =false;
 
-    private ProductionProcess(MinuteCountDownTimer cycleOff,
-                             MinuteCountDownTimer cycleOn,
-                             MinuteCountDownTimer machineTime,
-                             double aimedTemperature, double temperature) {
+    private ProductionProcessService(MinuteCountDownTimer cycleOff,
+                                     MinuteCountDownTimer cycleOn,
+                                     MinuteCountDownTimer machineTime,
+                                     double aimedTemperature, double temperature) {
         this.cycleOff = cycleOff;
         this.cycleOn = cycleOn;
         this.machineTime = machineTime;
@@ -64,9 +61,9 @@ public class ProductionProcess {
        });
    }
 
-    private ProductionProcess(EventHandler cycleOffTickHandler,
-                             EventHandler cycleOnTickHandler,
-                             EventHandler machineTimeTickHandler){
+    private ProductionProcessService(EventHandler cycleOffTickHandler,
+                                     EventHandler cycleOnTickHandler,
+                                     EventHandler machineTimeTickHandler){
         this(
                 new MinuteCountDownTimer(0,0,cycleOffTickHandler),
                 new MinuteCountDownTimer(0,0,cycleOnTickHandler),

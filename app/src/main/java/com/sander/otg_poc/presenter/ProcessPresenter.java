@@ -1,20 +1,47 @@
 package com.sander.otg_poc.presenter;
 
+import com.sander.otg_poc.controller.MachineController;
 import com.sander.otg_poc.databinding.ActivityProductionBinding;
 import com.sander.otg_poc.dto.TemperatureDto;
 import com.sander.otg_poc.dto.TimerDto;
 import com.sander.otg_poc.model.MachineState;
 import com.sander.otg_poc.model.MinuteCountDownTimer;
-import com.sander.otg_poc.model.ProductionProcess;
-import com.sander.otg_poc.service.UsbConnectionReceiver;
+import com.sander.otg_poc.service.ProductionProcessService;
+import com.sander.otg_poc.framework.service.SerialServiceConnection;
+import com.sander.otg_poc.framework.service.UsbConnectionReceiver;
+import com.sander.otg_poc.utils.EventHandler;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
-public class ProcessPresenter {
+public class ProcessPresenter{
 
-    //    private ProductionActivity view;
+    private static ProcessPresenter INSTANCE=null;
+
+    public static ProcessPresenter create(ActivityProductionBinding activityProductionBinding,
+                                          SerialServiceConnection serialServiceConnection){
+        INSTANCE = new ProcessPresenter(activityProductionBinding,
+                serialServiceConnection);
+        return INSTANCE;
+    }
+
+    public static ProcessPresenter getInstance(){
+        return INSTANCE;
+    }
+
+    private ProcessPresenter(ActivityProductionBinding activityProductionBinding
+            ,SerialServiceConnection serialServiceConnection) {
+        this.activityProductionBinding = activityProductionBinding;
+        productionProcess = ProductionProcessService.create(cycleOffHandler,cycleOnHandler,machineTimeHandler,currentTempHandler);
+        this.serialServiceConnection = serialServiceConnection;
+        //        machineController = new MachineController(this);
+    }
+
+
     private ActivityProductionBinding activityProductionBinding;
-    private ProductionProcess productionProcess;
+    private ProductionProcessService productionProcess;
+    private MachineController machineController;
+    private SerialServiceConnection serialServiceConnection;
+
 
     private EventHandler cycleOnHandler = o -> {
         if (o instanceof Long)
@@ -34,10 +61,6 @@ public class ProcessPresenter {
     };
 
 
-    public ProcessPresenter(ActivityProductionBinding activityProductionBinding) {
-        this.activityProductionBinding = activityProductionBinding;
-        productionProcess = ProductionProcess.create(cycleOffHandler,cycleOnHandler,machineTimeHandler,currentTempHandler);
-    }
 
     public void onCycleOnTick(long millis){
         TimerDto cycleOnLeft = TimerDto.millisToTimerDto(millis);
@@ -61,36 +84,6 @@ public class ProcessPresenter {
     public void onTemperatureChanged(Double temp){
         TemperatureDto temperatureDto = new TemperatureDto(temp);
         activityProductionBinding.setMachineTemp(temperatureDto);
-    }
-
-
-    public TimerDto getMachineTime() {
-        return TimerDto.millisToTimerDto(productionProcess.getMachineTime().getMillisLeft());
-    }
-
-    public TimerDto getAimedMachineTime() {
-        return new TimerDto(productionProcess.getMachineTime().getMinutes(),productionProcess.getMachineTime().getSeconds());
-    }
-
-
-    public TemperatureDto getCurrentTemp() {
-        return new TemperatureDto( productionProcess.getTemperature());
-    }
-
-    public TimerDto getCycleOff() {
-        return TimerDto.millisToTimerDto(productionProcess.getCycleOff().getMillisLeft());
-    }
-
-    public TimerDto getCycleOffSet() {
-        return new TimerDto(productionProcess.getCycleOff().getMinutes(),productionProcess.getCycleOff().getMinutes());
-    }
-
-    public TimerDto getCycleOn() {
-        return TimerDto.millisToTimerDto(productionProcess.getCycleOn().getMillisLeft());
-    }
-
-    public TimerDto getCycleOnSet() {
-        return new TimerDto(productionProcess.getCycleOn().getMinutes(),productionProcess.getCycleOn().getMinutes());
     }
 
     public void setCurrentTemp(String body) {
@@ -155,5 +148,10 @@ public class ProcessPresenter {
             productionProcess.stopProcess();
 
         activityProductionBinding.setMachineState(productionProcess.isProcessRunning());
+
+    }
+
+    public void sendMessage(String m) {
+        serialServiceConnection.getService().sendMessage(m);
     }
 }

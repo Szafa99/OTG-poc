@@ -1,19 +1,24 @@
 package com.sander.otg_poc.controller;
 
+import com.sander.otg_poc.framework.controller.SerialController;
 import com.sander.otg_poc.model.MachineState;
 import com.sander.otg_poc.presenter.ProcessPresenter;
-import com.sander.otg_poc.service.SerialServiceConnection;
+import com.sander.otg_poc.framework.service.SerialServiceConnection;
+import com.sander.otg_poc.framework.service.UsbConnectionReceiver;
 
-public class SerialController {
+
+@SerialController
+public class MachineController {
+
     private SerialServiceConnection serialServiceConnection;
     private ProcessPresenter presenter;
+    private UsbConnectionReceiver usbConnectionReceiver;
 
-    public SerialController(SerialServiceConnection serialServiceConnection,
-                            ProcessPresenter presenter) {
-        this.serialServiceConnection = serialServiceConnection;
+    public MachineController(ProcessPresenter presenter) {
         this.presenter = presenter;
     }
 
+    public MachineController(){}
     public void postMachineState(String body) {
         presenter.setMachineState(MachineState.valueOf(body));
     }

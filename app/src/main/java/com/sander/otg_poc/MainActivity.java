@@ -7,8 +7,10 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
-import com.sander.otg_poc.service.SerialServiceConnection;
-import com.sander.otg_poc.service.UsbConnectionReceiver;
+import com.sander.otg_poc.controller.MachineController;
+import com.sander.otg_poc.framework.controller.SerialDispatcher;
+import com.sander.otg_poc.framework.service.SerialServiceConnection;
+import com.sander.otg_poc.framework.service.UsbConnectionReceiver;
 
 import java.io.IOException;
 
@@ -21,12 +23,19 @@ public class MainActivity extends AppCompatActivity {
     TextView rcvMsg;
     UsbConnectionReceiver usbConnectionReceiver;
     SerialServiceConnection serialServiceConnection;
+
+    MachineController machineController = new MachineController();
     /////////////////
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        try {
+            new SerialDispatcher(this);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         rcvMsg = findViewById(R.id.recieveMessage);
 
@@ -36,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
             if (o instanceof String)
                runOnUiThread(()->rcvMsg.setText((String)o) );
         });
+
 
         IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
         IntentFilter filter2 = new IntentFilter(ACTION_USB_DEVICE_ATTACHED);
@@ -66,57 +76,6 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, ProductionActivity.class);
         startActivity(intent);
     }
-
-
-//    private class UsbConnectionReceiver extends BroadcastReceiver {
-//        private Intent usbIntent;
-//
-//          public SerialServiceConnection getSerialServiceConnection() {
-//              return serialServiceConnection;
-//          }
-//
-//          private SerialServiceConnection serialServiceConnection = new SerialServiceConnection();
-//
-//
-//        public void startSerialService(Context context){
-//            usbIntent = new Intent(context, SerialService.class);
-//            context.bindService(usbIntent,serialServiceConnection,Context.BIND_AUTO_CREATE);
-//            context.startService(usbIntent);
-//        }
-//
-//        @Override
-//        public void onReceive(Context context, Intent intent) {
-//            switch (intent.getAction()){
-//                case ACTION_USB_DEVICE_ATTACHED:
-//                    startSerialService(MainActivity.this);
-//                    try {
-//                        startSerialService(context);
-//                    } catch (Exception e) {
-//                        runOnUiThread(()->Toast.makeText(MainActivity.this,e.getMessage(),Toast.LENGTH_LONG).show());
-//                    }
-//                    break;
-//                    case ACTION_USB_DEVICE_DETACHED:
-//                        MainActivity.this.unbindService(serialServiceConnection);
-//                        break;
-//                case ACTION_USB_PERMISSION:
-//                    synchronized (this){
-//                        if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
-//                            try {
-//                                    serialServiceConnection.getService().startConnection();
-//                            } catch (IOException e) {
-//                                runOnUiThread(()->Toast.makeText(MainActivity.this,e.getMessage(),Toast.LENGTH_LONG).show());
-//                            }
-//                        }else
-//                            runOnUiThread(()->Toast.makeText(MainActivity.this,"USB prem denied",Toast.LENGTH_LONG).show());
-//                    }break;
-//                default:break;
-//            }
-//
-//        }
-//
-//    }
-
-
 
 
 }
