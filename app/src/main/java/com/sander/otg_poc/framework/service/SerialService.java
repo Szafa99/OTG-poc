@@ -117,15 +117,15 @@ public class SerialService extends Service {
         }
         int maxAttempts =2;
 
-        while (connection==null && maxAttempts>0) {
-            try {
-                Thread.sleep(2000);
+//        while (connection==null && maxAttempts>0) {
+//            try {
+//                Thread.sleep(2000);
                 initConnection();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            maxAttempts--;
-        }
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//            maxAttempts--;
+//        }
 
 
         if (connection==null) {
@@ -141,11 +141,9 @@ public class SerialService extends Service {
         ioManager = new SerialInputOutputManager(port,serialListener);
         ioManager.start();
     }
-
-
     public boolean sendMessage(String message){
 
-        if ( !serviceStarted || port==null || !port.isOpen()  || !manager.hasPermission(device)) {
+        if ( !serviceStarted || port==null || !port.isOpen() || manager==null || device==null || !manager.hasPermission(device)) {
             Toast.makeText(this,"No usb device connection",Toast.LENGTH_LONG).show();
             return false;
         }

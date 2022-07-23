@@ -1,6 +1,5 @@
 package com.sander.otg_poc.presenter;
 
-import com.sander.otg_poc.controller.MachineController;
 import com.sander.otg_poc.databinding.ActivityProductionBinding;
 import com.sander.otg_poc.dto.TemperatureDto;
 import com.sander.otg_poc.dto.TimerDto;
@@ -8,7 +7,6 @@ import com.sander.otg_poc.model.MachineState;
 import com.sander.otg_poc.model.MinuteCountDownTimer;
 import com.sander.otg_poc.service.ProductionProcessService;
 import com.sander.otg_poc.framework.service.SerialServiceConnection;
-import com.sander.otg_poc.framework.service.UsbConnectionReceiver;
 import com.sander.otg_poc.utils.EventHandler;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -33,13 +31,11 @@ public class ProcessPresenter{
         this.activityProductionBinding = activityProductionBinding;
         productionProcess = ProductionProcessService.create(cycleOffHandler,cycleOnHandler,machineTimeHandler,currentTempHandler);
         this.serialServiceConnection = serialServiceConnection;
-        //        machineController = new MachineController(this);
     }
 
 
     private ActivityProductionBinding activityProductionBinding;
     private ProductionProcessService productionProcess;
-    private MachineController machineController;
     private SerialServiceConnection serialServiceConnection;
 
 
@@ -65,7 +61,6 @@ public class ProcessPresenter{
     public void onCycleOnTick(long millis){
         TimerDto cycleOnLeft = TimerDto.millisToTimerDto(millis);
         activityProductionBinding.setCycleOn(cycleOnLeft);
-//        view.renderCycleOn(cycleOnLeft);
     }
 
     public void onCycleOffTick(long millis){
@@ -78,7 +73,7 @@ public class ProcessPresenter{
         TimerDto machineTimeLeft = TimerDto.millisToTimerDto(millis);
         activityProductionBinding.setMachineTime(machineTimeLeft);
         if (MILLISECONDS.toSeconds(millis)==0 && productionProcess!=null)
-            toggleMachine();
+            activityProductionBinding.setMachineState(false);
     }
 
     public void onTemperatureChanged(Double temp){
@@ -89,7 +84,6 @@ public class ProcessPresenter{
     public void setCurrentTemp(String body) {
         Double currentTemp = Double.valueOf(body);
 
-//        view.renderCurrentTemp(body);
         activityProductionBinding.setMachineTemp(new TemperatureDto(currentTemp));
     }
 
@@ -98,28 +92,41 @@ public class ProcessPresenter{
             productionProcess.startProcess();
         if (state == MachineState.OFF)
             productionProcess.stopProcess();
+
+        activityProductionBinding.setMachineState(productionProcess.isProcessRunning());
     }
 
     public void updateMachineTimeSet(TimerDto machineTime) {
         TimerDto timerDto = productionProcess.updateMachineTime(machineTime.getMinutes(), machineTime.getSeconds());
         activityProductionBinding.setMachineTimeSet(timerDto);
+        if (serialServiceConnection.getService()!=null) {
+            serialServiceConnection.getService().sendMessage("TX/machineTime/"+machineTime);
+        }
     }
 
     public void updateCycleOnSet(TimerDto machineTime) {
         TimerDto timerDto = productionProcess.updateCycleOn(machineTime.getMinutes(), machineTime.getSeconds());
         activityProductionBinding.setCycleOnSet(timerDto);
+        if (serialServiceConnection.getService()!=null) {
+            serialServiceConnection.getService().sendMessage("TX/cycleOn/"+machineTime);
+
+        }
     }
 
+    //
     public void updateCycleOffSet(TimerDto machineTime) {
         TimerDto timerDto = productionProcess.updateCycleOff(machineTime.getMinutes(), machineTime.getSeconds());
         activityProductionBinding.setCycleOffSet(timerDto);
+        if (serialServiceConnection.getService()!=null) {
+            serialServiceConnection.getService().sendMessage("TX/cycleOff/"+machineTime);
+        }
     }
 
     public void initProductionActivity() {
 
         MinuteCountDownTimer machineTime = productionProcess.getMachineTime();
-        activityProductionBinding.setMachineTime(new TimerDto(machineTime.getMinutes(), machineTime.getSeconds()));
-        activityProductionBinding.setMachineTimeSet(TimerDto.millisToTimerDto(machineTime.getMillisLeft()));
+        activityProductionBinding.setMachineTime(TimerDto.millisToTimerDto(machineTime.getMillisLeft()));
+        activityProductionBinding.setMachineTimeSet(new TimerDto(machineTime.getMinutes(), machineTime.getSeconds()));
 
         activityProductionBinding.setMachineTemp(new TemperatureDto(productionProcess.getTemperature()));
         activityProductionBinding.setMachineTempAimed(new TemperatureDto(productionProcess.getAimedTemperature()));
@@ -142,7 +149,7 @@ public class ProcessPresenter{
     }
 
     public void toggleMachine() {
-        if (!productionProcess.isProcessRunning()) {
+        if (!productionProcess.isProcessRunning()){
             productionProcess.startProcess();
         }else
             productionProcess.stopProcess();
@@ -152,6 +159,29 @@ public class ProcessPresenter{
     }
 
     public void sendMessage(String m) {
-        serialServiceConnection.getService().sendMessage(m);
+        if (serialServiceConnection.getService()!=null)
+            serialServiceConnection.getService().sendMessage(m);
+    }
+
+    public void setCycleOn(String s) {
+        TimerDto timerDto = new TimerDto(s);
+        activityProductionBinding.setCycleOn(timerDto);
+        productionProcess.updateCycleOn(timerDto.getMinutes(),timerDto.getSeconds());
+    }
+
+    public void setCycleOff(String cycleOff) {
+        TimerDto timerDto = new TimerDto(cycleOff);
+        activityProductionBinding.setCycleOff(timerDto);
+        productionProcess.updateCycleOff(timerDto.getMinutes(),timerDto.getSeconds());
+    }
+
+    public void setMachineState(String state) {
+        setMachineState(MachineState.valueOf(state));
+    }
+
+    public void setMachineTime(String machineTime) {
+        TimerDto timerDto = new TimerDto(machineTime);
+        activityProductionBinding.setMachineTime(timerDto);
+        productionProcess.updateMachineTime(timerDto.getMinutes(),timerDto.getSeconds());
     }
 }

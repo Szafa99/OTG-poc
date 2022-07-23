@@ -108,12 +108,15 @@ public class ProductionActivity extends AppCompatActivity {
     }
 
     public void onMachineToggleClick(View view) {
-//        presenter.toggleMachine();
-       String m = (String)activityProductionBinding.getMessage();
-        presenter.sendMessage(m);
+        presenter.toggleMachine();
     }
 
     public void connectMachine(View view) {
         usbConnectionReceiver.startSerialService(this);
+    }
+
+    public void onSendMessage(View view) {
+        String m = (String)activityProductionBinding.getMessage();
+        presenter.sendMessage(m);
     }
 }

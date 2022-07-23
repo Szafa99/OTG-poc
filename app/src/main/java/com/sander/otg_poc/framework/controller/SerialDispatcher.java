@@ -2,7 +2,9 @@ package com.sander.otg_poc.framework.controller;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import com.sander.otg_poc.controller.EngineController;
 import com.sander.otg_poc.controller.MachineController;
+import com.sander.otg_poc.framework.service.SerialService;
 import com.sander.otg_poc.utils.EventHandler;
 import dalvik.system.DexFile;
 
@@ -17,12 +19,14 @@ public class SerialDispatcher implements EventHandler {
     private final String packageName ="com.sander.otg_poc";
     Set<Class> serialControllers;
     Context context;
+    SerialService serialService;
 
     public SerialDispatcher(Context context)  {
         this.context = context;
         this.serialControllers = getAnnotatedClasses(SerialController.class);
-        dispatchMessage("");
-        this.serialControllers.size();
+//        String[] s = "TX/engineCycleOn/22:30".split("/");
+//        dispatchMessage(s[1], Arrays.copyOfRange(s,2,s.length));
+//        this.serialControllers.size();
     }
 
 
@@ -38,7 +42,7 @@ public class SerialDispatcher implements EventHandler {
                     cl = Class.forName(s);
                     Annotation[] declaredAnnotations = cl.getAnnotations();
                     for (Annotation a : declaredAnnotations )
-                        if ( a instanceof SerialController || s.equals(MachineController.class.getName()))
+                        if ( a instanceof SerialController || s.equals(EngineController.class.getName()) )
                             annotatedClasses.add(cl);
                 }catch (Error | Exception e) {}
             }
@@ -82,7 +86,7 @@ public class SerialDispatcher implements EventHandler {
         String method = split[0];
         String mapping = split[1];
 
-        if (SerialRequest.TX.equals(method))
+        if (SerialRequest.TX.toString().equals(method))
             dispatchMessage(mapping,Arrays.copyOfRange(split,2,split.length));
     }
 
@@ -96,12 +100,12 @@ public class SerialDispatcher implements EventHandler {
     private enum SerialRequest {
         RX("RX"),TX("TX");//receive transmit
         private String serialMethod;
-        public static String delimiter = "/";
+        public final static String delimiter = "/";
 
         SerialRequest(String serialMethod) {
             this.serialMethod = serialMethod;
         }
-    };
+    }
 
 
 

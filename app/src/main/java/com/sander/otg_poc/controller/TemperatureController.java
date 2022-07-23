@@ -1,6 +1,7 @@
 package com.sander.otg_poc.controller;
 
 import android.util.Log;
+import com.sander.otg_poc.dto.TimerDto;
 import com.sander.otg_poc.framework.controller.SerialController;
 import com.sander.otg_poc.framework.controller.SerialRequestMapping;
 import com.sander.otg_poc.presenter.ProcessPresenter;
@@ -8,20 +9,15 @@ import com.sander.otg_poc.presenter.ProcessPresenter;
 @SerialController
 public class TemperatureController {
 
-
-    private String s;
-    public TemperatureController() {
-        this.s = "s";
-    }
-    @SerialRequestMapping(mapping = "aimedTemp")
-    public void getAimedTemp(){
-
+    private final ProcessPresenter processPresenter;
+    public TemperatureController(){
+        this.processPresenter = ProcessPresenter.getInstance();
     }
 
-    @SerialRequestMapping(mapping = "")
-    public void getTemp(){
-        Log.i(this.getClass().getName(),"getTemp");
-        ProcessPresenter.getInstance().setCurrentTemp("22.22");
+    @SerialRequestMapping(mapping = "currentTemp")
+    public void updateCurrentTemp(String str){
+        if (str!=null){
+            processPresenter.setCurrentTemp(str);
+        }
     }
-
 }

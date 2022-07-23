@@ -17,6 +17,15 @@ public class TimerDto extends DecimalInput{
         this.seconds = seconds;
     }
 
+        public TimerDto(String time){
+        this.seconds =0;
+        this.minutes =0;
+        String[] split = time.split(this.delimiter);
+        if (split[0]!=null)
+            this.minutes = Integer.valueOf(split[0]);
+        if (split[1]!=null)
+            this.seconds = Integer.valueOf(split[1]);
+    }
 
     public static TimerDto millisToTimerDto(long millis){
         int newMinutes = (int)MILLISECONDS.toMinutes(millis);
@@ -84,5 +93,10 @@ public class TimerDto extends DecimalInput{
 
     public long toMillis(){
         return MINUTES.toMillis(minutes) + SECONDS.toMillis(seconds);
+    }
+
+    @Override
+    public String toString(){
+        return minutes+delimiter+seconds;
     }
 }

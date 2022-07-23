@@ -31,7 +31,6 @@ public class UsbConnectionReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         switch (intent.getAction()){
             case ACTION_USB_DEVICE_ATTACHED:
-                startSerialService(context);
                 try {
                     startSerialService(context);
                 } catch (Exception e) {
@@ -40,7 +39,8 @@ public class UsbConnectionReceiver extends BroadcastReceiver {
                 }
                 break;
             case ACTION_USB_DEVICE_DETACHED:
-                context.unbindService(serialServiceConnection);
+//                context.unbindService(serialServiceConnection);
+                context.stopService(usbIntent);
                 break;
             case SerialService.ACTION_USB_PERMISSION:
                 synchronized (this){
