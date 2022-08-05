@@ -18,6 +18,7 @@ public class TimerDto extends DecimalInput{
     }
 
         public TimerDto(String time){
+        time = time.trim();
         this.seconds =0;
         this.minutes =0;
         String[] split = time.split(this.delimiter);

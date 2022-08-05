@@ -133,7 +133,7 @@ public class SerialService extends Service {
             return;
         }
         port.open(connection);
-        port.setParameters(9600, 8, UsbSerialPort.STOPBITS_1, UsbSerialPort.PARITY_NONE);
+        port.setParameters(115200, 8, UsbSerialPort.STOPBITS_1, UsbSerialPort.PARITY_NONE);
 
         Toast.makeText(this, " connected",Toast.LENGTH_LONG).show();
         port.setDTR(true); // for arduino, ...
@@ -142,15 +142,18 @@ public class SerialService extends Service {
         ioManager.start();
     }
     public boolean sendMessage(String message){
-
-        if ( !serviceStarted || port==null || !port.isOpen() || manager==null || device==null || !manager.hasPermission(device)) {
-            Toast.makeText(this,"No usb device connection",Toast.LENGTH_LONG).show();
-            return false;
-        }
         try {
-            port.write(message.getBytes(StandardCharsets.UTF_8), 100);
-        } catch (IOException e) {
-            e.printStackTrace();
+            if (!serviceStarted || port == null || !port.isOpen() || manager == null || device == null || !manager.hasPermission(device)) {
+                Toast.makeText(this, "No usb device connection", Toast.LENGTH_LONG).show();
+                return false;
+            }
+            try {
+                port.write(message.getBytes(StandardCharsets.UTF_8), 100);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }catch (Exception e){
+            return false;
         }
         return true;
     }

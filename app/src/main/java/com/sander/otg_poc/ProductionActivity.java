@@ -21,7 +21,6 @@ public class ProductionActivity extends AppCompatActivity {
     InputValueLayoutBinding inputValueLayoutBinding;
     AlertDialog.Builder builder;
     ProcessPresenter presenter;
-    SerialServiceConnection serialServiceConnection;
     private UsbConnectionReceiver usbConnectionReceiver;
 
 

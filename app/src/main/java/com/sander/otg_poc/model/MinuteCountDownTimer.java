@@ -12,13 +12,15 @@ public class MinuteCountDownTimer {
     private int seconds;
 
     private long millisLeft;
+    private long secondsLeft;
+    private long startTime=0;
 
     public MinuteCountDownTimerState getState() {
         return state;
     }
 
     private MinuteCountDownTimerState state = MinuteCountDownTimerState.FINISHED;
-    public final static long COUNT_DOWN_INTERVAL = SECONDS.toMillis(1);
+    public final static long COUNT_DOWN_INTERVAL = 50;// millis
     private Timer timer;
 
     public boolean isRunning() {
@@ -43,8 +45,7 @@ public class MinuteCountDownTimer {
         boolean wasRunning = resetTimer();
         this.minutes = minutes;
         timer = new Timer(minutes, seconds);
-
-        if (wasRunning) {
+                if (wasRunning) {
             timer.start();
             state = MinuteCountDownTimerState.RUNNING;
         }
@@ -135,12 +136,17 @@ public class MinuteCountDownTimer {
 
         Timer(long millis) {
             super(millis, COUNT_DOWN_INTERVAL);
+
         }
 
         @Override
         public void onTick(long l) {
-            millisLeft = l;
-            onTickHandler.emitEvent(l);
+            long currentTimeMillis = System.currentTimeMillis();
+            if (currentTimeMillis - startTime >= 1000L) {
+                millisLeft = l/1000;
+                onTickHandler.emitEvent(millisLeft);
+                startTime = currentTimeMillis;
+            }
         }
 
         @Override

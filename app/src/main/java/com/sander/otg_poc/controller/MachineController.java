@@ -16,15 +16,15 @@ public class MachineController {
         this.processPresenter = ProcessPresenter.getInstance();
     }
 
-    @SerialRequestMapping(mapping = "machineState")
+    @SerialRequestMapping(mapping = "MACHINE_STATE")
     public void updateMachineState(String state){
         if (state!=null)
             processPresenter.setMachineState(state);
     }
 
-    @SerialRequestMapping(mapping = "machineTime")
+    @SerialRequestMapping(mapping = "MACHINE_TIME")
     public void updateMachineTime(String machineTime){
-        if (machineTime!=null)
-            processPresenter.setMachineTime(machineTime);
+        if (machineTime!=null && processPresenter!=null)
+            processPresenter.setMachineTimeAimed(machineTime);
     }
 }

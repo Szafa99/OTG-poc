@@ -2,6 +2,9 @@ package com.sander.otg_poc.framework.controller;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import com.sander.otg_poc.controller.EngineController;
 import com.sander.otg_poc.controller.MachineController;
 import com.sander.otg_poc.framework.service.SerialService;
@@ -16,7 +19,6 @@ import java.util.*;
 
 public class SerialDispatcher implements EventHandler {
 
-    private final String packageName ="com.sander.otg_poc";
     Set<Class> serialControllers;
     Context context;
     SerialService serialService;
@@ -24,9 +26,6 @@ public class SerialDispatcher implements EventHandler {
     public SerialDispatcher(Context context)  {
         this.context = context;
         this.serialControllers = getAnnotatedClasses(SerialController.class);
-//        String[] s = "TX/engineCycleOn/22:30".split("/");
-//        dispatchMessage(s[1], Arrays.copyOfRange(s,2,s.length));
-//        this.serialControllers.size();
     }
 
 
@@ -53,7 +52,7 @@ public class SerialDispatcher implements EventHandler {
     }
 
     @SuppressLint("NewApi")
-    void dispatchMessage(String mapping,Object ... objects){
+    void dispatchMessage(String mapping,Object ... objects) {
 
         serialControllers.forEach( sc-> {
             List<Method> methods = new ArrayList<>(1);
@@ -68,12 +67,9 @@ public class SerialDispatcher implements EventHandler {
                 throw new RuntimeException(mapping+" MUST BE UNIQUE");
             else if (methods.size()==1) {
                 try {
-                    methods.get(0).invoke(sc.newInstance(),objects);
-                } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
-                    e.printStackTrace();
-                }
+                    methods.get(0).invoke(sc.newInstance(), objects);
+                }catch (Exception e){e.printStackTrace();}
             }
-
         });
 
     }
@@ -86,8 +82,9 @@ public class SerialDispatcher implements EventHandler {
         String method = split[0];
         String mapping = split[1];
 
-        if (SerialRequest.TX.toString().equals(method))
-            dispatchMessage(mapping,Arrays.copyOfRange(split,2,split.length));
+        if (SerialRequest.TX.toString().equals(method)) {
+                dispatchMessage(mapping,Arrays.copyOfRange(split,2,split.length));
+        }
     }
 
     @Override

@@ -14,18 +14,18 @@ public class EngineController{
         this.processPresenter = ProcessPresenter.getInstance();
     }
 
-    @SerialRequestMapping(mapping = "cycleOn")
+    @SerialRequestMapping(mapping = "ENGINE_ON_PERIOD")
     public void updateEngineCycleOn(String cycleOn){
-        if (cycleOn != null) {
-            processPresenter.setCycleOn(cycleOn);
+        if (cycleOn != null && processPresenter != null) {
+            processPresenter.setCycleOnAimed(cycleOn);
         }
     }
 
-    @SerialRequestMapping(mapping = "cycleOff")
+    @SerialRequestMapping(mapping = "ENGINE_OFF_PERIOD")
     public void updateEngineCycleOff(String cycleOff){
 
-        if (cycleOff != null) {
-            processPresenter.setCycleOff(cycleOff);
+        if (cycleOff != null && processPresenter!=null) {
+            processPresenter.setCycleOffAimed(cycleOff);
         }
 
 

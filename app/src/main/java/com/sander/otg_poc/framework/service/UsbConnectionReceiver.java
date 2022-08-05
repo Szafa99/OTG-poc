@@ -32,15 +32,14 @@ public class UsbConnectionReceiver extends BroadcastReceiver {
         switch (intent.getAction()){
             case ACTION_USB_DEVICE_ATTACHED:
                 try {
-                    startSerialService(context);
+                    startSerialService(context.getApplicationContext());
                 } catch (Exception e) {
-//                  runOnUiThread(()->Toast.makeText(MainActivity.this,e.getMessage(),Toast.LENGTH_LONG).show());
                   Toast.makeText(context,e.getMessage(),Toast.LENGTH_LONG).show();
                 }
                 break;
             case ACTION_USB_DEVICE_DETACHED:
-//                context.unbindService(serialServiceConnection);
-                context.stopService(usbIntent);
+                context.getApplicationContext().stopService(usbIntent);
+                Toast.makeText(context,"Device disconnected",Toast.LENGTH_LONG).show();
                 break;
             case SerialService.ACTION_USB_PERMISSION:
                 synchronized (this){
@@ -50,10 +49,8 @@ public class UsbConnectionReceiver extends BroadcastReceiver {
                             serialServiceConnection.getService().startConnection();
                         } catch (IOException e) {
                             Toast.makeText(context,e.getMessage(),Toast.LENGTH_LONG).show();
-//                            runOnUiThread(()->Toast.makeText(MainActivity.this,e.getMessage(),Toast.LENGTH_LONG).show());
                         }
                     }else
-//                        runOnUiThread(()->Toast.makeText(MainActivity.this,"USB prem denied",Toast.LENGTH_LONG).show());
                         Toast.makeText(context,"USB prem denied",Toast.LENGTH_LONG).show();
                 }break;
             default:break;

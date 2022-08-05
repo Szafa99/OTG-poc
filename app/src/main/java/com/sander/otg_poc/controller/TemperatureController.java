@@ -9,14 +9,11 @@ import com.sander.otg_poc.presenter.ProcessPresenter;
 @SerialController
 public class TemperatureController {
 
-    private final ProcessPresenter processPresenter;
-    public TemperatureController(){
-        this.processPresenter = ProcessPresenter.getInstance();
-    }
 
-    @SerialRequestMapping(mapping = "currentTemp")
+    @SerialRequestMapping(mapping = "DS18B20_TEMP")
     public void updateCurrentTemp(String str){
-        if (str!=null){
+        ProcessPresenter processPresenter = ProcessPresenter.getInstance();
+        if (str!=null && processPresenter!=null){
             processPresenter.setCurrentTemp(str);
         }
     }
