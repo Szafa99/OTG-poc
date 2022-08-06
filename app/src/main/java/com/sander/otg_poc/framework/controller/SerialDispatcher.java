@@ -21,7 +21,6 @@ public class SerialDispatcher implements EventHandler {
 
     Set<Class> serialControllers;
     Context context;
-    SerialService serialService;
 
     public SerialDispatcher(Context context)  {
         this.context = context;
@@ -68,7 +67,7 @@ public class SerialDispatcher implements EventHandler {
             else if (methods.size()==1) {
                 try {
                     methods.get(0).invoke(sc.newInstance(), objects);
-                }catch (Exception e){e.printStackTrace();}
+                }catch (Exception e){}
             }
         });
 

@@ -1,7 +1,12 @@
 package com.sander.otg_poc.model;
 
 import android.os.CountDownTimer;
+import android.os.Handler;
+import android.os.Looper;
 import com.sander.otg_poc.utils.EventHandler;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -12,8 +17,6 @@ public class MinuteCountDownTimer {
     private int seconds;
 
     private long millisLeft;
-    private long secondsLeft;
-    private long startTime=0;
 
     public MinuteCountDownTimerState getState() {
         return state;
@@ -115,6 +118,7 @@ public class MinuteCountDownTimer {
             timer.start();
             state = MinuteCountDownTimerState.RUNNING;
         } else if (state.equals(MinuteCountDownTimerState.FINISHED)) {
+            timer = new Timer(minutes, seconds);
             timer.start();
             state = MinuteCountDownTimerState.RUNNING;
         }
@@ -128,7 +132,7 @@ public class MinuteCountDownTimer {
         }
     }
 
-    private class Timer extends CountDownTimer {
+    private class Timer extends PreciseTimer {
 
         Timer(int minutes, int seconds) {
             this(MINUTES.toMillis(minutes) + SECONDS.toMillis(seconds));
@@ -141,12 +145,8 @@ public class MinuteCountDownTimer {
 
         @Override
         public void onTick(long l) {
-            long currentTimeMillis = System.currentTimeMillis();
-            if (currentTimeMillis - startTime >= 1000L) {
-                millisLeft = l/1000;
+                millisLeft = l;
                 onTickHandler.emitEvent(millisLeft);
-                startTime = currentTimeMillis;
-            }
         }
 
         @Override
@@ -172,6 +172,41 @@ public class MinuteCountDownTimer {
         private String state;
     }
 
+}
+
+
+abstract class PreciseTimer{
+
+    PreciseTimer(long duration,long interval){
+        this.duration = duration;
+        this.interval = interval;
+        this.timer = new Timer();
+    }
+
+
+    long duration,interval;
+    private Timer timer;
+    private final TimerTask task = new TimerTask() {
+        @Override
+        public void run() {
+            duration -= interval;
+            onTick(duration);
+            if (duration<=0) {
+                PreciseTimer.this.cancel();
+                onFinish();
+            }
+        }
+    };
+
+    abstract void onFinish();
+    abstract void  onTick(long millisLeft);
+    void start(){
+        timer.scheduleAtFixedRate(task,0,interval);
+    }
+    void cancel(){
+        timer.cancel();
+        timer.purge();// remove all canceled tasks
+    }
 }
 
 

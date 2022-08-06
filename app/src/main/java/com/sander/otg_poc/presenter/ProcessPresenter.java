@@ -1,5 +1,6 @@
 package com.sander.otg_poc.presenter;
 
+import android.os.Handler;
 import android.os.Looper;
 import android.widget.Toast;
 import com.sander.otg_poc.databinding.ActivityProductionBinding;
@@ -21,7 +22,6 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 public class ProcessPresenter{
 
     private static ProcessPresenter INSTANCE=null;
-//    private SerialDispatcher serialDispatcher;
     public static ProcessPresenter create(ActivityProductionBinding activityProductionBinding,
                                           SerialServiceConnection serialServiceConnection){
         INSTANCE = new ProcessPresenter(activityProductionBinding,
@@ -38,8 +38,6 @@ public class ProcessPresenter{
         this.activityProductionBinding = activityProductionBinding;
         productionProcess = ProductionProcessService.create(cycleOffHandler,cycleOnHandler,machineTimeHandler,updateTemperatureTask);
         this.serialServiceConnection = serialServiceConnection;
-//        serialDispatcher = new SerialDispatcher(this.activityProductionBinding.getRoot().getContext());
-//        Looper.prepare();
     }
 
 
@@ -85,15 +83,14 @@ public class ProcessPresenter{
 
     public void onCycleOffTick(long millis){
         TimerDto cycleOffLeft = TimerDto.millisToTimerDto(millis);
-//        view.renderCycleOff(cycleOffLeft);
         activityProductionBinding.setCycleOff(cycleOffLeft);
     }
 
     public void onMachineTimeTick(long millis) {
         TimerDto machineTimeLeft = TimerDto.millisToTimerDto(millis);
         activityProductionBinding.setMachineTime(machineTimeLeft);
-        if (MILLISECONDS.toSeconds(millis)==0 && productionProcess!=null)
-            activityProductionBinding.setMachineState(false);
+            if (MILLISECONDS.toSeconds(millis)==0 && productionProcess!=null)
+                activityProductionBinding.setMachineState(false);
     }
 
     public void onTemperatureChanged(Double temp){
