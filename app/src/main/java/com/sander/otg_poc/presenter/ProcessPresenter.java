@@ -1,21 +1,16 @@
 package com.sander.otg_poc.presenter;
 
-import android.os.Handler;
-import android.os.Looper;
-import android.widget.Toast;
 import com.sander.otg_poc.databinding.ActivityProductionBinding;
 import com.sander.otg_poc.dto.TemperatureDto;
 import com.sander.otg_poc.dto.TimerDto;
-import com.sander.otg_poc.framework.controller.SerialDispatcher;
 import com.sander.otg_poc.model.MachineState;
 import com.sander.otg_poc.model.MinuteCountDownTimer;
+import com.sander.otg_poc.model.TimerState;
 import com.sander.otg_poc.service.ProductionProcessService;
 import com.sander.otg_poc.framework.service.SerialServiceConnection;
 import com.sander.otg_poc.utils.EventHandler;
 
-import java.util.Timer;
 import java.util.TimerTask;
-import java.util.logging.LoggingPermission;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
@@ -64,8 +59,9 @@ public class ProcessPresenter{
         private final String body = " ";
         @Override
         public void run() {
-            if (serialServiceConnection.getService()!=null)
-            serialServiceConnection.getService().sendMessage("RX/DS18B20_TEMP/"+body);
+            if (serialServiceConnection!=null && serialServiceConnection.getService()!=null) {
+                serialServiceConnection.getService().sendMessage("RX/DS18B20_TEMP/"+body);
+            }
         }
     };
 
@@ -106,58 +102,32 @@ public class ProcessPresenter{
 
 
     public void updateMachineTimeSet(TimerDto machineTime) {
-//        TimerDto timerDto = productionProcess.updateMachineTime(machineTime.getMinutes(), machineTime.getSeconds());
-//        activityProductionBinding.setMachineTimeSet(timerDto);
-//        productionProcess.setMachineTimeAimed(timerDto);
-
-
-//        if (serialServiceConnection.getService()!=null) {
-//            serialServiceConnection.getService().sendMessage("TX/MACHINE_TIME/"+machineTime);
-//        }
         sendMessage("TX/MACHINE_TIME/"+machineTime);
-
     }
 
     public void updateCycleOnSet(TimerDto machineTime) {
-
-//        TimerDto timerDto = productionProcess.updateCycleOn(machineTime.getMinutes(), machineTime.getSeconds());
-//        productionProcess.setCycleOnAimed(timerDto);
-
-//        activityProductionBinding.setCycleOnSet(timerDto);
-//        if (serialServiceConnection.getService()!=null) {
-//            serialServiceConnection.getService().sendMessage("TX/ENGINE_ON_PERIOD/"+machineTime);
         sendMessage("TX/ENGINE_ON_PERIOD/"+machineTime);
-//        }
     }
 
-    //Should update
     public void updateCycleOffSet(TimerDto machineTime) {
-//        if (serialServiceConnection.getService()!=null) {
-//            serialServiceConnection.getService().sendMessage("TX/ENGINE_OFF_PERIOD/"+machineTime);
         sendMessage("TX/ENGINE_OFF_PERIOD/"+machineTime);
-//        }
-
-//        TimerDto timerDto = productionProcess.updateCycleOff(machineTime.getMinutes(), machineTime.getSeconds());
-//        productionProcess.setCycleOnAimed(timerDto);
-//        activityProductionBinding.setCycleOffSet(timerDto);
     }
 
     public void initProductionActivity() {
 
         MinuteCountDownTimer machineTime = productionProcess.getMachineTime();
-        activityProductionBinding.setMachineTime(TimerDto.millisToTimerDto(machineTime.getMillisLeft()));
-        activityProductionBinding.setMachineTimeSet(new TimerDto(machineTime.getMinutes(), machineTime.getSeconds()));
+        activityProductionBinding.setMachineTimeSet(TimerDto.millisToTimerDto(machineTime.getTimeSet()));
 
         activityProductionBinding.setMachineTemp(new TemperatureDto(productionProcess.getTemperature()));
         activityProductionBinding.setMachineTempAimed(new TemperatureDto(productionProcess.getAimedTemperature()));
 
         MinuteCountDownTimer cycleOff = productionProcess.getCycleOff();
-        activityProductionBinding.setCycleOffSet(new TimerDto(cycleOff.getMinutes(),cycleOff.getSeconds()));
-        activityProductionBinding.setCycleOff(TimerDto.millisToTimerDto(cycleOff.getMillisLeft()));
+        activityProductionBinding.setCycleOffSet(TimerDto.millisToTimerDto(cycleOff.getTimeSet()));
+//        activityProductionBinding.setCycleOff(TimerDto.millisToTimerDto(cycleOff.getMillisLeft()));
 
         MinuteCountDownTimer cycleOn = productionProcess.getCycleOn();
-        activityProductionBinding.setCycleOnSet(new TimerDto(cycleOn.getMinutes(),cycleOn.getSeconds()));
-        activityProductionBinding.setCycleOn(TimerDto.millisToTimerDto(cycleOn.getMillisLeft()));
+        activityProductionBinding.setCycleOnSet(TimerDto.millisToTimerDto(cycleOn.getTimeSet()));
+//        activityProductionBinding.setCycleOn(TimerDto.millisToTimerDto(cycleOn.getMillisLeft()));
 
         activityProductionBinding.setMachineState(false);
     }
@@ -168,36 +138,12 @@ public class ProcessPresenter{
         activityProductionBinding.setMachineTempAimed(new TemperatureDto(productionProcess.getAimedTemperature()));
     }
 
-    void initMachineStart(){
-        if (serialServiceConnection.getService()==null) return;
-        serialServiceConnection.getService().sendMessage("TX/MACHINE_STATE/ON");
-
-        if (! productionProcess.getMachineTime().getState().equals(MinuteCountDownTimer.MinuteCountDownTimerState.FINISHED)) {
-        TimerDto cycleOff = new TimerDto(productionProcess.getCycleOff().getMinutes(), productionProcess.getCycleOff().getSeconds());
-        sendMessage("TX/ENGINE_OFF_PERIOD/"+cycleOff);
-
-        TimerDto cycleOn = new TimerDto(productionProcess.getCycleOn().getMinutes(), productionProcess.getCycleOn().getSeconds());
-        sendMessage("TX/ENGINE_ON_PERIOD/"+cycleOn);
-
-        TimerDto machineTime = new TimerDto(productionProcess.getMachineTime().getMinutes(), productionProcess.getMachineTime().getSeconds());
-        sendMessage("TX/MACHINE_TIME/"+machineTime);
-        }
-
-    }
-
     public void toggleMachine() {
         if (!productionProcess.isProcessRunning()){
-//            initMachineStart();
             sendMessage("TX/MACHINE_STATE/ON");
-
-//            productionProcess.startProcess();
         }else {
-//            productionProcess.stopProcess();
-//            if (serialServiceConnection.getService()!=null)
-//                serialServiceConnection.getService().sendMessage("TX/MACHINE_STATE/OFF");
             sendMessage("TX/MACHINE_STATE/OFF");
         }
-//        activityProductionBinding.setMachineState(productionProcess.isProcessRunning());
     }
 
     public void setMachineState(String stateStr) {
@@ -220,7 +166,6 @@ public class ProcessPresenter{
         if (serialServiceConnection.getService()!=null &&
                 serialServiceConnection.getService().sendMessage(m) ==false)
             return;
-//          serialDispatcher.onNext(m);
     }
 
     public void setCycleOnAimed(String s) {
@@ -228,7 +173,6 @@ public class ProcessPresenter{
         TimerDto timerDto1 = productionProcess.updateCycleOn(timerDto.getMinutes(), timerDto.getSeconds());
 
         activityProductionBinding.setCycleOnSet(timerDto1);
-
     }
 
     public void setCycleOffAimed(String cycleOff) {
@@ -236,7 +180,6 @@ public class ProcessPresenter{
         TimerDto timerDto1 = productionProcess.updateCycleOff(timerDto.getMinutes(), timerDto.getSeconds());
         activityProductionBinding.setCycleOffSet(timerDto1);
     }
-
 
     public void setMachineTimeAimed(String machineTime) {
         TimerDto timerDto = new TimerDto(machineTime);

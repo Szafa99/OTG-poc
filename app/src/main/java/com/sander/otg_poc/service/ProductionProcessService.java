@@ -2,7 +2,6 @@ package com.sander.otg_poc.service;
 
 import android.os.Handler;
 import android.os.Looper;
-import android.os.Message;
 import com.sander.otg_poc.dto.TimerDto;
 import com.sander.otg_poc.model.MinuteCountDownTimer;
 import com.sander.otg_poc.utils.EventHandler;
@@ -16,13 +15,13 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 public class ProductionProcessService {
 
     private static ProductionProcessService INSTANCE=null;
-    private Timer temperatureTimer;
+    private Timer temperatureTimer = new Timer();
+    private Timer engineTaskTimer = new Timer();
     public static ProductionProcessService create(EventHandler cycleOffTickHandler,
                                                   EventHandler cycleOnTickHandler,
                                                   EventHandler machineTimeTickHandler,
                                                   TimerTask task){
         INSTANCE = new ProductionProcessService(cycleOffTickHandler,cycleOnTickHandler,machineTimeTickHandler);
-        INSTANCE.temperatureTimer =  new Timer();
         INSTANCE.temperatureTimer.scheduleAtFixedRate(task,0,SECONDS.toMillis(20));
         return INSTANCE;
     }
@@ -55,22 +54,14 @@ public class ProductionProcessService {
         this.machineTime = machineTime;
         this.aimedTemperature = aimedTemperature;
         this.temperature = temperature;
-        this.machineTimeAimed = new TimerDto(machineTime.getMinutes(),machineTime.getSeconds());
-        this.cycleOffAimed = new TimerDto(cycleOff.getMinutes(),cycleOff.getSeconds());
-        this.cycleOnAimed = new TimerDto(cycleOn.getMinutes(),cycleOn.getSeconds());
+        this.machineTimeAimed = TimerDto.millisToTimerDto(machineTime.getTimeSet());
+        this.cycleOffAimed = TimerDto.millisToTimerDto(machineTime.getTimeSet());
+        this.cycleOnAimed = TimerDto.millisToTimerDto(machineTime.getTimeSet());
         initOnFinishHandlers();
         handler = new Handler(Looper.getMainLooper());
     }
 
    void initOnFinishHandlers(){
-       cycleOff.setOnFinishHandler( o->{
-           if(machineTime.getMillisLeft()>0)
-               cycleOn.start();
-       });
-       cycleOn.setOnFinishHandler( o->{
-           if(machineTime.getMillisLeft()>0)
-               cycleOff.start();
-       });
        machineTime.setOnFinishHandler( o->{
            cycleOff.resetTimer();
            cycleOn.resetTimer();
@@ -94,48 +85,12 @@ public class ProductionProcessService {
         return cycleOff;
     }
 
-    public void setCycleOff(MinuteCountDownTimer cycleOff) {
-        this.cycleOff = cycleOff;
-    }
-
     public MinuteCountDownTimer getCycleOn() {
         return cycleOn;
     }
 
-    public void setCycleOn(MinuteCountDownTimer cycleOn) {
-        this.cycleOn = cycleOn;
-    }
-
     public MinuteCountDownTimer getMachineTime() {
         return machineTime;
-    }
-
-    public TimerDto getCycleOffAimed() {
-        return cycleOffAimed;
-    }
-
-    public void setCycleOffAimed(TimerDto cycleOffAimed) {
-        this.cycleOffAimed = cycleOffAimed;
-    }
-
-    public TimerDto getCycleOnAimed() {
-        return cycleOnAimed;
-    }
-
-    public void setCycleOnAimed(TimerDto cycleOnAimed) {
-        this.cycleOnAimed = cycleOnAimed;
-    }
-
-    public TimerDto getMachineTimeAimed() {
-        return machineTimeAimed;
-    }
-
-    public void setMachineTimeAimed(TimerDto machineTimeAimed) {
-        this.machineTimeAimed = machineTimeAimed;
-    }
-
-    public void setMachineTime(MinuteCountDownTimer machineTime) {
-        this.machineTime = machineTime;
     }
 
     public double getAimedTemperature() {
@@ -150,16 +105,12 @@ public class ProductionProcessService {
         return temperature;
     }
 
-    public void setTemperature(double temperature) {
-        this.temperature = temperature;
 
-    }
 
     public TimerDto updateMachineTime(int minutes, int seconds) {
 
         handler.post(()->{
-            machineTime.setMinutes(minutes);
-            machineTime.setSeconds(seconds);
+            machineTime.updateTimer(minutes,seconds);
         });
 
         return new TimerDto(minutes,seconds);
@@ -167,8 +118,7 @@ public class ProductionProcessService {
 
     public TimerDto updateCycleOff(int minutes, int seconds) {
         handler.post(()->{
-            cycleOff.setMinutes(minutes);
-            cycleOff.setSeconds(seconds);
+            cycleOff.updateTimer(minutes,seconds);
         });
 
         return new TimerDto(minutes,seconds);
@@ -176,28 +126,28 @@ public class ProductionProcessService {
 
     public TimerDto updateCycleOn(int minutes, int seconds) {
         handler.post(()->{
-            cycleOn.setMinutes(minutes);
-            cycleOn.setSeconds(seconds);
-
+            cycleOn.updateTimer(minutes,seconds);
         });
         return new TimerDto(minutes,seconds);
     }
 
+
+
     public void stopProcess(){
         handler.post(()->{
-        cycleOff.stop();
-        cycleOn.stop();
-        machineTime.stop();
+            machineTime.stop();
+            cycleOff.stop();
+            cycleOn.stop();
         });
     }
 
     public void startProcess() {
         handler.post(()->{
             machineTime.start();
-            if (  cycleOff.getState().equals(MinuteCountDownTimer.MinuteCountDownTimerState.STOPED) )
-                cycleOff.start();
-            else
-                cycleOn.start();
+//            if (  cycleOff.getState().equals(TimerState.STOPED) )
+//                cycleOff.start();
+//            else
+//                cycleOn.start();
         });
     }
 }

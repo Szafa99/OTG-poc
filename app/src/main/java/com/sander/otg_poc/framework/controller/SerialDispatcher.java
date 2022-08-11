@@ -67,7 +67,9 @@ public class SerialDispatcher implements EventHandler {
             else if (methods.size()==1) {
                 try {
                     methods.get(0).invoke(sc.newInstance(), objects);
-                }catch (Exception e){}
+                }catch (Exception e){
+                    e.getMessage();
+                }
             }
         });
 
