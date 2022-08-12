@@ -123,11 +123,11 @@ public class ProcessPresenter{
 
         MinuteCountDownTimer cycleOff = productionProcess.getCycleOff();
         activityProductionBinding.setCycleOffSet(TimerDto.millisToTimerDto(cycleOff.getTimeSet()));
-//        activityProductionBinding.setCycleOff(TimerDto.millisToTimerDto(cycleOff.getMillisLeft()));
+        activityProductionBinding.setCycleOff(TimerDto.millisToTimerDto(0));
 
         MinuteCountDownTimer cycleOn = productionProcess.getCycleOn();
         activityProductionBinding.setCycleOnSet(TimerDto.millisToTimerDto(cycleOn.getTimeSet()));
-//        activityProductionBinding.setCycleOn(TimerDto.millisToTimerDto(cycleOn.getMillisLeft()));
+        activityProductionBinding.setCycleOn(TimerDto.millisToTimerDto(0));
 
         activityProductionBinding.setMachineState(false);
     }
@@ -156,6 +156,10 @@ public class ProcessPresenter{
         }
         if (state == MachineState.OFF) {
             productionProcess.stopProcess();
+            running=false;
+        }
+        if (state == MachineState.FINISHED) {
+            productionProcess.finishProcess();
             running=false;
         }
         activityProductionBinding.setMachineState(running);

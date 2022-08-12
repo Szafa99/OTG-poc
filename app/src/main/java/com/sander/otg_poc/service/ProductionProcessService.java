@@ -4,6 +4,7 @@ import android.os.Handler;
 import android.os.Looper;
 import com.sander.otg_poc.dto.TimerDto;
 import com.sander.otg_poc.model.MinuteCountDownTimer;
+import com.sander.otg_poc.model.TimerState;
 import com.sander.otg_poc.utils.EventHandler;
 
 
@@ -136,18 +137,24 @@ public class ProductionProcessService {
     public void stopProcess(){
         handler.post(()->{
             machineTime.stop();
-            cycleOff.stop();
-            cycleOn.stop();
         });
     }
 
     public void startProcess() {
         handler.post(()->{
             machineTime.start();
-//            if (  cycleOff.getState().equals(TimerState.STOPED) )
-//                cycleOff.start();
-//            else
-//                cycleOn.start();
+            if (  cycleOff.getState().equals(TimerState.STOPPED))
+                cycleOff.start();
+            else if ( cycleOn.getState().equals(TimerState.STOPPED))
+                cycleOn.start();
+        });
+    }
+
+    public void finishProcess() {
+        handler.post(()->{
+            machineTime.resetTimer();
+            cycleOff.resetTimer();
+            cycleOn.resetTimer();
         });
     }
 }
