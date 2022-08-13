@@ -31,20 +31,6 @@
         </activity>
 
         <service android:name=".framework.service.SerialService"></service>
-<!--        <receiver android:name=".service.UsbConnectionReceiver" android:exported="true">-->
-
-<!--            <intent-filter>-->
-<!--                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />-->
-<!--            </intent-filter>-->
-
-<!--            <intent-filter>-->
-<!--                <action android:name="android.hardware.usb.action.USB_DEVICE_DETACHED" />-->
-<!--            </intent-filter>-->
-
-<!--            <meta-data-->
-<!--                    android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"-->
-<!--                    android:resource="@xml/device_filter" />-->
-<!--        </receiver>-->
 
     </application>
 

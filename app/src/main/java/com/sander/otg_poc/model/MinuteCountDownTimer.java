@@ -35,7 +35,6 @@ public class MinuteCountDownTimer extends PreciseTimer {
 
     @Override
     public void onFinish() {
-        resetTimer();
         if (onFinishHandler!=null)
             onFinishHandler.emitEvent(null);
     }

@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
 
         rcvMsg = findViewById(R.id.recieveMessage);
 
-        usbConnectionReceiver = new UsbConnectionReceiver();
+        usbConnectionReceiver = UsbConnectionReceiver.getInstance();
         serialServiceConnection = usbConnectionReceiver.getSerialServiceConnection();
         serialServiceConnection.subscribeToSerial((o)-> {
             if (o instanceof String)

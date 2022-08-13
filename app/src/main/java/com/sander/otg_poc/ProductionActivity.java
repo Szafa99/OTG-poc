@@ -1,5 +1,6 @@
 package com.sander.otg_poc;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +16,8 @@ import com.sander.otg_poc.presenter.ProcessPresenter;
 import com.sander.otg_poc.framework.service.SerialServiceConnection;
 import com.sander.otg_poc.framework.service.UsbConnectionReceiver;
 
+import static android.hardware.usb.UsbManager.ACTION_USB_DEVICE_ATTACHED;
+
 public class ProductionActivity extends AppCompatActivity {
 
     ActivityProductionBinding activityProductionBinding;
@@ -29,7 +32,7 @@ public class ProductionActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         activityProductionBinding = DataBindingUtil.setContentView(this, R.layout.activity_production);
         activityProductionBinding.setLifecycleOwner(this);
-        usbConnectionReceiver = new UsbConnectionReceiver();
+        usbConnectionReceiver = UsbConnectionReceiver.getInstance();
 
         presenter = ProcessPresenter.create(activityProductionBinding,usbConnectionReceiver.getSerialServiceConnection());
 
@@ -111,7 +114,8 @@ public class ProductionActivity extends AppCompatActivity {
     }
 
     public void connectMachine(View view) {
-        usbConnectionReceiver.startSerialService(this);
+        usbConnectionReceiver.startSerialService(this.getApplicationContext());
+        usbConnectionReceiver.startSerialService(this.getApplicationContext());
     }
 
     public void onSendMessage(View view) {
