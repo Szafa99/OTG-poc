@@ -134,8 +134,9 @@ public class ProcessPresenter{
 
 
     public void updateAimedTemperature(TemperatureDto temperatureDto) {
-        productionProcess.setAimedTemperature(temperatureDto.getTemperature());
-        activityProductionBinding.setMachineTempAimed(new TemperatureDto(productionProcess.getAimedTemperature()));
+        sendMessage("TX/AIMED_TEMP/"+temperatureDto);
+//        productionProcess.setAimedTemperature(temperatureDto.getTemperature());
+//        activityProductionBinding.setMachineTempAimed(new TemperatureDto(productionProcess.getAimedTemperature()));
     }
 
     public void toggleMachine() {
@@ -171,6 +172,13 @@ public class ProcessPresenter{
                 serialServiceConnection.getService().sendMessage(m) ==false)
             return;
     }
+
+    public void setAimedTemp(String temp){
+        TemperatureDto temperatureDto = new TemperatureDto(Double.valueOf(temp));
+        productionProcess.setAimedTemperature(temperatureDto.getTemperature());
+        activityProductionBinding.setMachineTempAimed(temperatureDto);
+    }
+
 
     public void setCycleOnAimed(String s) {
         TimerDto timerDto = new TimerDto(s);

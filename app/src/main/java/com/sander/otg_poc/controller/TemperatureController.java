@@ -17,4 +17,12 @@ public class TemperatureController {
             processPresenter.setCurrentTemp(str);
         }
     }
+
+    @SerialRequestMapping(mapping = "AIMED_TEMP")
+    public void updateAimedTemp(String temp){
+        ProcessPresenter processPresenter = ProcessPresenter.getInstance();
+        if (temp!=null && processPresenter!=null){
+            processPresenter.setAimedTemp(temp);
+        }
+    }
 }

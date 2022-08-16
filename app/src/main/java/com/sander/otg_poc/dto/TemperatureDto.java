@@ -76,4 +76,9 @@ public class TemperatureDto extends  DecimalInput {
         this.delimiter = delimiter;
         notifyPropertyChanged(BR.delimiter);
     }
+
+    @Override
+    public String toString(){
+        return String.format("%2.2f",temperature);
+    }
 }
