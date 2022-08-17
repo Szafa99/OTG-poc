@@ -19,6 +19,11 @@ public class ProcessPresenter{
     private static ProcessPresenter INSTANCE=null;
     public static ProcessPresenter create(ActivityProductionBinding activityProductionBinding,
                                           SerialServiceConnection serialServiceConnection){
+        if (INSTANCE != null) {
+            INSTANCE.serialServiceConnection = serialServiceConnection;
+            INSTANCE.activityProductionBinding = activityProductionBinding;
+            return INSTANCE;
+        }
         INSTANCE = new ProcessPresenter(activityProductionBinding,
                 serialServiceConnection);
         return INSTANCE;
@@ -31,6 +36,7 @@ public class ProcessPresenter{
     private ProcessPresenter(ActivityProductionBinding activityProductionBinding
             ,SerialServiceConnection serialServiceConnection) {
         this.activityProductionBinding = activityProductionBinding;
+
         productionProcess = ProductionProcessService.create(cycleOffHandler,cycleOnHandler,machineTimeHandler,updateTemperatureTask);
         this.serialServiceConnection = serialServiceConnection;
     }
@@ -96,7 +102,7 @@ public class ProcessPresenter{
 
     public void setCurrentTemp(String body) {
         Double currentTemp = Double.valueOf(body);
-
+        productionProcess.setTemperature(currentTemp);
         activityProductionBinding.setMachineTemp(new TemperatureDto(currentTemp));
     }
 
@@ -117,6 +123,7 @@ public class ProcessPresenter{
 
         MinuteCountDownTimer machineTime = productionProcess.getMachineTime();
         activityProductionBinding.setMachineTimeSet(TimerDto.millisToTimerDto(machineTime.getTimeSet()));
+        activityProductionBinding.setMachineTime(TimerDto.millisToTimerDto(0));
 
         activityProductionBinding.setMachineTemp(new TemperatureDto(productionProcess.getTemperature()));
         activityProductionBinding.setMachineTempAimed(new TemperatureDto(productionProcess.getAimedTemperature()));
@@ -129,14 +136,12 @@ public class ProcessPresenter{
         activityProductionBinding.setCycleOnSet(TimerDto.millisToTimerDto(cycleOn.getTimeSet()));
         activityProductionBinding.setCycleOn(TimerDto.millisToTimerDto(0));
 
-        activityProductionBinding.setMachineState(false);
+        activityProductionBinding.setMachineState(productionProcess.isProcessRunning());
     }
 
 
     public void updateAimedTemperature(TemperatureDto temperatureDto) {
         sendMessage("TX/AIMED_TEMP/"+temperatureDto);
-//        productionProcess.setAimedTemperature(temperatureDto.getTemperature());
-//        activityProductionBinding.setMachineTempAimed(new TemperatureDto(productionProcess.getAimedTemperature()));
     }
 
     public void toggleMachine() {

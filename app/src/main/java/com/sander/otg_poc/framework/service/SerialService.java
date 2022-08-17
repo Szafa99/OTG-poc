@@ -1,5 +1,6 @@
 package com.sander.otg_poc.framework.service;
 
+import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
@@ -8,21 +9,28 @@ import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
 import android.os.Binder;
+import android.os.Build;
 import android.os.IBinder;
 import android.widget.Toast;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+import androidx.core.app.NotificationCompat;
 import com.hoho.android.usbserial.driver.UsbSerialDriver;
 import com.hoho.android.usbserial.driver.UsbSerialPort;
 import com.hoho.android.usbserial.driver.UsbSerialProber;
 import com.hoho.android.usbserial.util.SerialInputOutputManager;
+import com.sander.otg_poc.MainActivity;
 import com.sander.otg_poc.utils.EventHandler;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import static com.sander.otg_poc.MainActivity.NOTIFICATION_CHANEL;
+
 public class SerialService extends Service {
     public static final String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION";
+    public static final String INIT_CONNECTION = "INIT_CONNECTION";
 
     private UsbDeviceConnection connection;
     private UsbDevice device;
@@ -57,13 +65,37 @@ public class SerialService extends Service {
         usbPermissionIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        try {
-            startConnection();
-            serviceStarted = true;
-        }catch (Exception e){}
-        return super.onStartCommand(intent, flags, startId);
+        switch (intent.getAction()) {
+            case UsbManager.EXTRA_PERMISSION_GRANTED:
+                try {
+                    startConnection();
+                    serviceStarted = true;
+                } catch (IOException e) {
+                    Toast.makeText(this,"Failed to start",Toast.LENGTH_SHORT).show();
+                }
+                break;
+            case INIT_CONNECTION:
+                initConnection();
+                break;
+        }
+
+        return START_NOT_STICKY;
+    }
+
+    private void startForeGroundService(){
+        Notification notification =
+                null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            notification = new Notification.Builder(this, NOTIFICATION_CHANEL)
+                    .setContentTitle("Prod procces")
+                    .build();
+        }
+
+        startForeground(1, notification);
+
     }
 
     @Override
@@ -82,6 +114,7 @@ public class SerialService extends Service {
     public boolean onUnbind(Intent intent){
         return true;
     }
+
     private void initConnection(){
         // Find all available drivers from attached devices.
 
@@ -99,9 +132,9 @@ public class SerialService extends Service {
         }
         connection = manager.openDevice(device);
 
-        if (connection == null) {
-            manager.requestPermission(device,usbPermissionIntent );
-        }
+//        if (connection == null || !manager.hasPermission(device)) {
+        manager.requestPermission(device,usbPermissionIntent );
+//        }
     }
 
     public void startConnection() throws IOException{
@@ -129,6 +162,7 @@ public class SerialService extends Service {
         port.setRTS(true);
         ioManager = new SerialInputOutputManager(port,serialListener);
         ioManager.start();
+        startForeGroundService();
     }
     public boolean sendMessage(String message){
         try {

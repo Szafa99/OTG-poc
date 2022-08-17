@@ -1,10 +1,14 @@
 package com.sander.otg_poc.framework.service;
 
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.hardware.usb.UsbManager;
+import android.os.Build;
 import android.widget.Toast;
+import androidx.annotation.RequiresApi;
 import androidx.navigation.ui.NavigationUI;
 
 import java.io.IOException;
@@ -31,18 +35,19 @@ public class UsbConnectionReceiver extends BroadcastReceiver {
 
     private SerialServiceConnection serialServiceConnection = new SerialServiceConnection();
 
-    public void startSerialServiceManually(){
-        try {
-            serialServiceConnection.getService().startConnection();
-        } catch (IOException e) {}
-    }
 
     public void startSerialService(Context context){
         usbIntent = new Intent(context, SerialService.class);
-        context.bindService(usbIntent,serialServiceConnection,Context.BIND_AUTO_CREATE);
-        context.startService(usbIntent);
+        usbIntent.setAction(SerialService.INIT_CONNECTION);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            context.startForegroundService(usbIntent);
+            context.bindService(usbIntent,serialServiceConnection,Context.BIND_AUTO_CREATE);
+        }
+
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void onReceive(Context context, Intent intent) {
         switch (intent.getAction()){
@@ -52,15 +57,16 @@ public class UsbConnectionReceiver extends BroadcastReceiver {
             case ACTION_USB_DEVICE_DETACHED:
                 if (usbIntent!=null) {
                     context.getApplicationContext().stopService(usbIntent);
+                    context.getApplicationContext().unbindService(serialServiceConnection);
                     Toast.makeText(context, "Device disconnected", Toast.LENGTH_LONG).show();
                 }
                 break;
             case SerialService.ACTION_USB_PERMISSION:
                 synchronized (this){
                     if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
-                        try {
-                              serialServiceConnection.getService().startConnection();
-                        } catch (IOException e) {}
+                        Intent usbPremIntent = new Intent(context, SerialService.class);
+                        usbPremIntent.setAction(UsbManager.EXTRA_PERMISSION_GRANTED);
+                        context.startForegroundService(usbPremIntent);
                     }else
                         Toast.makeText(context,"USB prem denied",Toast.LENGTH_LONG).show();
                 }

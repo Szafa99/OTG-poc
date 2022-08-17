@@ -2,6 +2,7 @@ package com.sander.otg_poc.service;
 
 import android.os.Handler;
 import android.os.Looper;
+import androidx.navigation.ui.NavigationUI;
 import com.sander.otg_poc.dto.TimerDto;
 import com.sander.otg_poc.model.MinuteCountDownTimer;
 import com.sander.otg_poc.model.TimerState;
@@ -17,11 +18,12 @@ public class ProductionProcessService {
 
     private static ProductionProcessService INSTANCE=null;
     private Timer temperatureTimer = new Timer();
-    private Timer engineTaskTimer = new Timer();
     public static ProductionProcessService create(EventHandler cycleOffTickHandler,
                                                   EventHandler cycleOnTickHandler,
                                                   EventHandler machineTimeTickHandler,
                                                   TimerTask task){
+        if (INSTANCE != null)
+            return INSTANCE;
         INSTANCE = new ProductionProcessService(cycleOffTickHandler,cycleOnTickHandler,machineTimeTickHandler);
         INSTANCE.temperatureTimer.scheduleAtFixedRate(task,0,SECONDS.toMillis(20));
         return INSTANCE;
@@ -32,11 +34,8 @@ public class ProductionProcessService {
     }
 
     private MinuteCountDownTimer cycleOff;
-    private TimerDto cycleOffAimed;
     private MinuteCountDownTimer cycleOn;
-    private TimerDto cycleOnAimed;
     private MinuteCountDownTimer machineTime;
-    private TimerDto machineTimeAimed;
     private double aimedTemperature;
     private double temperature;
     private Handler handler;
@@ -55,9 +54,6 @@ public class ProductionProcessService {
         this.machineTime = machineTime;
         this.aimedTemperature = aimedTemperature;
         this.temperature = temperature;
-        this.machineTimeAimed = TimerDto.millisToTimerDto(machineTime.getTimeSet());
-        this.cycleOffAimed = TimerDto.millisToTimerDto(machineTime.getTimeSet());
-        this.cycleOnAimed = TimerDto.millisToTimerDto(machineTime.getTimeSet());
         initOnFinishHandlers();
         handler = new Handler(Looper.getMainLooper());
     }
@@ -102,14 +98,15 @@ public class ProductionProcessService {
         this.aimedTemperature = aimedTemperature;
     }
 
+    public void setTemperature(double temperature) {
+        this.temperature = temperature;
+    }
+
     public double getTemperature() {
         return temperature;
     }
 
-
-
     public TimerDto updateMachineTime(int minutes, int seconds) {
-
         handler.post(()->{
             machineTime.updateTimer(minutes,seconds);
         });
@@ -131,8 +128,6 @@ public class ProductionProcessService {
         });
         return new TimerDto(minutes,seconds);
     }
-
-
 
     public void stopProcess(){
         handler.post(()->{

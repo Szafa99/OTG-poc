@@ -115,7 +115,7 @@ public class ProductionActivity extends AppCompatActivity {
 
     public void connectMachine(View view) {
         usbConnectionReceiver.startSerialService(this.getApplicationContext());
-        usbConnectionReceiver.startSerialService(this.getApplicationContext());
+//        usbConnectionReceiver.startSerialService(this.getApplicationContext());
     }
 
     public void onSendMessage(View view) {

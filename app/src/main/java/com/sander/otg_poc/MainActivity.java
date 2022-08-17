@@ -1,11 +1,16 @@
 package com.sander.otg_poc;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import com.sander.otg_poc.controller.MachineController;
 import com.sander.otg_poc.framework.controller.SerialDispatcher;
@@ -19,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION";
     private static final String ACTION_USB_DEVICE_ATTACHED= "android.hardware.usb.action.USB_DEVICE_ATTACHED";
     private static final String ACTION_USB_DEVICE_DETACHED = "android.hardware.usb.action.USB_DEVICE_DETACHED";
-
+    public static final String NOTIFICATION_CHANEL = "PRODUCTION_CHANEL";
     TextView rcvMsg;
     UsbConnectionReceiver usbConnectionReceiver;
     SerialServiceConnection serialServiceConnection;
@@ -53,11 +58,21 @@ public class MainActivity extends AppCompatActivity {
         registerReceiver(usbConnectionReceiver,filter);
         registerReceiver(usbConnectionReceiver,filter2);
         registerReceiver(usbConnectionReceiver,filter3);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            createNotificationChanel();
+        }
     }
 
 
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    private void createNotificationChanel(){
+        NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANEL, "example", NotificationManager.IMPORTANCE_DEFAULT);
 
+        NotificationManager manager = getSystemService(NotificationManager.class);
+        manager.createNotificationChannel(channel);
+    }
 
     public void sendMsg(View view) throws IOException {
         EditText text = findViewById(R.id.message);
