@@ -3,6 +3,7 @@ package com.sander.otg_poc.framework.service;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
 import android.hardware.usb.UsbDevice;
@@ -20,6 +21,8 @@ import com.hoho.android.usbserial.driver.UsbSerialPort;
 import com.hoho.android.usbserial.driver.UsbSerialProber;
 import com.hoho.android.usbserial.util.SerialInputOutputManager;
 import com.sander.otg_poc.MainActivity;
+import com.sander.otg_poc.ProductionActivity;
+import com.sander.otg_poc.R;
 import com.sander.otg_poc.utils.EventHandler;
 
 import java.io.IOException;
@@ -86,11 +89,22 @@ public class SerialService extends Service {
     }
 
     private void startForeGroundService(){
-        Notification notification =
-                null;
+        Notification notification =null;
+
+        Intent resultIntent = new Intent(this,ProductionActivity.class);
+        // Create the TaskStackBuilder and add the intent, which inflates the back stack
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+        stackBuilder.addNextIntentWithParentStack(resultIntent);
+        // Get the PendingIntent containing the entire back stack
+        PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             notification = new Notification.Builder(this, NOTIFICATION_CHANEL)
                     .setContentTitle("Prod procces")
+                    .setContentIntent(resultPendingIntent)
+                    .setContentText("Production process is running")
+                    .setSmallIcon(R.drawable.ic_launcher_foreground)
+                    .setOngoing(true)
                     .build();
         }
 
